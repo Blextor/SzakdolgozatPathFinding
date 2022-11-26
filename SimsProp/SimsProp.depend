@@ -67,3 +67,39 @@
 	"common.h"
 	"vec3.h"
 
+1669423283 source:c:\users\bobo\documents\github\szakdolgozatpathfinding\simsprop\main.cpp
+	"common.h"
+	"vec3.h"
+
+1669424346 c:\users\bobo\documents\github\szakdolgozatpathfinding\simsprop\common.h
+	<vector>
+	<set>
+	<string>
+	<iostream>
+	<SDL2/SDL.h>
+	<SDL2/SDL_image.h>
+	<SDL2/SDL2_gfxPrimitives.h>
+	<time.h>
+	<math.h>
+	<algorithm>
+	<time.h>
+	<math.h>
+	<thread>
+	<WinSock2.h>
+	<WS2tcpip.h>
+	<system_error>
+	<windows.h>
+	<stdlib.h>
+
+1669423275 c:\users\bobo\documents\github\szakdolgozatpathfinding\simsprop\vec3.h
+	<cmath>
+	<iostream>
+
+1669424162 source:c:\users\bobo\documents\github\szakdolgozatpathfinding\simsprop\simulationmain.cpp
+	"common.h"
+	"vec3.h"
+
+1669423275 source:c:\users\bobo\documents\github\szakdolgozatpathfinding\simsprop\vec3.cpp
+	"common.h"
+	"vec3.h"
+

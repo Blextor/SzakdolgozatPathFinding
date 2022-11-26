@@ -158,8 +158,7 @@ void DistanceSegments2(
 }
 
 bool operator== (const vec2& lhs,const vec2& rhs) {
-    float epsz = 0.00001f;
-    return (fabs(lhs.x-rhs.x)<epsz && fabs(lhs.y-rhs.y)<epsz);
+    return (fabs(lhs.x-rhs.x)<EPSZ && fabs(lhs.y-rhs.y)<EPSZ);
 }
 
 bool operator< (const vec2& lhs,const vec2& rhs) {

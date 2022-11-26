@@ -60,6 +60,14 @@ bool metszikEgymast(Szakasz sz1, Szakasz sz2){
     return (!Dret && res<EPSZ && ((t>EPSZ && t<1.0f-EPSZ) || (s>EPSZ && s<1.0f-EPSZ) ));
 }
 
+bool metszikEgymastPrec(Szakasz sz1, Szakasz sz2){
+    double res = 0, s = 0, t = 0;
+    vec2 closest2[2];
+    bool Dret = false;
+    DistanceSegments2(sz1.p1,sz1.p2,sz2.p1,sz2.p2,res,s,t,closest2,Dret);
+    return (!Dret && res<EPSZ2 && ((t>EPSZ2 && t<1.0f-EPSZ2) || (s>EPSZ2 && s<1.0f-EPSZ2) ));
+}
+
 bool metszikVagyAtlapolodnak(Szakasz sz1, Szakasz sz2){
     if ((sz1.p1 == sz2.p1 && sz1.p2 == sz2.p2) || (sz1.p2 == sz2.p1 && sz1.p1 == sz2.p2))
         return true;
@@ -68,6 +76,16 @@ bool metszikVagyAtlapolodnak(Szakasz sz1, Szakasz sz2){
     bool Dret = false;
     DistanceSegments2(sz1.p1,sz1.p2,sz2.p1,sz2.p2,res,s,t,closest2,Dret);
     return (res<EPSZ && ((t>EPSZ && t<1.0f-EPSZ) || (s>EPSZ && s<1.0f-EPSZ) ));
+}
+
+bool metszikVagyAtlapolodnakPrec(Szakasz sz1, Szakasz sz2){
+    if ((sz1.p1 == sz2.p1 && sz1.p2 == sz2.p2) || (sz1.p2 == sz2.p1 && sz1.p1 == sz2.p2))
+        return true;
+    double res = 0, s = 0, t = 0;
+    vec2 closest2[2];
+    bool Dret = false;
+    DistanceSegments2(sz1.p1,sz1.p2,sz2.p1,sz2.p2,res,s,t,closest2,Dret);
+    return (res<EPSZ2 && ((t>EPSZ2 && t<1.0f-EPSZ2) || (s>EPSZ2 && s<1.0f-EPSZ2) ));
 }
 
 struct Haromszog{
@@ -134,9 +152,9 @@ struct Sikidom{
         vector<Szakasz> oldalak = szakaszok;
         vector<Szakasz> atlokEsOldalak = oldalak;   /// ezekkel nem szabad metszeni magunkat
         vector<vec2> csucsok;                       /// miket akarunk osszekottetni
-        cout<<"OLDALAK"<<endl;
+        ///cout<<"OLDALAK"<<endl;
         for (int i=0; i<oldalak.size(); i++){
-            cout<<oldalak[i].p1.x<<" "<<oldalak[i].p1.y<<", "<<oldalak[i].p2.x<<" "<<oldalak[i].p2.y<<" "<<endl;
+            ///cout<<oldalak[i].p1.x<<" "<<oldalak[i].p1.y<<", "<<oldalak[i].p2.x<<" "<<oldalak[i].p2.y<<" "<<endl;
             csucsok.push_back(oldalak[i].p1);
         }
         for (int i=0; i<csucsok.size(); i++){
@@ -175,11 +193,11 @@ struct Sikidom{
         cout<<"atlokBefore: "<<atlok.size()<<endl;
         while(!stop && true){
             for (int i=0; i<szomszedCsucsIdx.size(); i++){
-                cout<<"Szomszedok: ";
+                ///cout<<"Szomszedok: ";
                 for (int j=0; j<szomszedCsucsIdx[i].size(); j++){
-                    cout<<szomszedCsucsIdx[i][j]<<", ";
+                    ///cout<<szomszedCsucsIdx[i][j]<<", ";
                 }
-                cout<<endl;
+                ///cout<<endl;
             }
             cnt++;
             stop=true;
@@ -299,13 +317,14 @@ struct Palya{
         kbPontok.push_back(vec2(100,100));
         kbPontok.push_back(vec2(300,300));
         kbPontok.push_back(vec2(300,100));
-        kbPontok.push_back(vec2(100,300));
-        kbPontok.push_back(vec2(200,200));
+        //kbPontok.push_back(vec2(100,300));
+        //kbPontok.push_back(vec2(200,200));
         kbPontok.push_back(vec2(200,100));
-        kbPontok.push_back(vec2(100,200));
-        kbPontok.push_back(vec2(200,300));
+        //kbPontok.push_back(vec2(100,200));
+        //kbPontok.push_back(vec2(200,300));
         kbPontok.push_back(vec2(300,200));
 
+        srand(time(NULL));
         float PI = 3.1415f;
         for (int i=0; i<kbPontok.size(); i++){
             int hanySzog = 3+rand()%6;
@@ -341,7 +360,7 @@ struct Palya{
         temp.szakaszok.push_back(Szakasz(vec2(300,225),vec2(225,225)));
         temp.belso=false;
         sikidomok.push_back(temp);
-
+        */
         temp.szakaszok.clear();
         temp.szakaszok.push_back(Szakasz(vec2(100,200),vec2(200,200)));
         temp.szakaszok.push_back(Szakasz(vec2(200,200),vec2(200,300)));
@@ -353,7 +372,7 @@ struct Palya{
         temp.szakaszok.push_back(Szakasz(vec2(100,300),vec2(100,200)));
         temp.belso=false;
         sikidomok.push_back(temp);
-        */
+
     }
 
     void bakeNavMesh(){
@@ -367,7 +386,7 @@ struct Palya{
                 temp.push_back(sikidomok[i].szakaszok[0].p1);
             for (int j=0; j<sikidomok[i].szakaszok.size(); j++){
                 temp.push_back(sikidomok[i].szakaszok[j].p2);
-                szakaszok.push_back(Szakasz(sikidomok[i].szakaszok[j].p1,sikidomok[i].szakaszok[j].p2));
+                szakaszok.push_back(sikidomok[i].szakaszok[j]);
             }
             sikeresSzakaszok.push_back(tempB);
             halmaz.push_back(temp);
@@ -885,6 +904,7 @@ struct Palya{
         cout<<"szakaszokA.size(): "<<szakaszokA.size()<<endl;
         BAszakasz.clear();
         BAszakasz.assign(szakaszokA.begin(),szakaszokA.end());
+        cout<<"BAszakasz.size(): "<<BAszakasz.size()<<endl;
         //}
     }
 
@@ -918,6 +938,115 @@ struct Palya{
         for (int i=0; i<csucsokFokszama.size(); i++){
             cout<<csucsokFokszama[i]<<endl;
         }
+
+        vector<Sikidom> ret;
+        vector<Szakasz> osszesSzakasz;
+        set<vec2> osszesCsucsSet;
+        for (int i=0; i<navMesh.size(); i++){
+            for (int j=0; j<navMesh[i].szakaszok.size(); j++){
+                osszesSzakasz.push_back(navMesh[i].szakaszok[j]);
+                osszesCsucsSet.insert(navMesh[i].szakaszok[j].p1);
+            }
+        }
+        vector<vec2> osszesCsucs; osszesCsucs.assign(osszesCsucsSet.begin(),osszesCsucsSet.end());
+        set<Szakasz> tempOsszesSzakasz;
+        copy(osszesSzakasz.begin(), osszesSzakasz.end(),inserter(tempOsszesSzakasz, tempOsszesSzakasz.end()));
+        for (int i=0; i<megmaradtSzakaszok.size(); i++){
+            if (tempOsszesSzakasz.find(megmaradtSzakaszok[i]) != tempOsszesSzakasz.end())
+                tempOsszesSzakasz.erase(tempOsszesSzakasz.find(megmaradtSzakaszok[i]));
+            if (tempOsszesSzakasz.find(megmaradtSzakaszok[i].inv()) != tempOsszesSzakasz.end())
+                tempOsszesSzakasz.erase(tempOsszesSzakasz.find(megmaradtSzakaszok[i].inv()));
+        }
+        osszesSzakasz.clear();
+        osszesSzakasz.assign(tempOsszesSzakasz.begin(),tempOsszesSzakasz.end());
+
+        vector<vector<int>> ujHaromszogekIdx;
+        cout<<"EDDIG RENDBEN"<<endl;
+        for (int idx=INT_MAX; idx<csucsok.size(); idx++){
+            bool ujHaromszog = false;
+            for (int i=0; i<csucsok.size(); i++){
+                if (i==idx)
+                    continue;
+                for (int j=i+1; j<csucsok.size(); j++){
+                    if (j==idx)
+                        continue;
+                    set<int> csucsIdxSet={idx,i,j};
+                    vector<int> csucsIdx;
+                    csucsIdx.assign(csucsIdxSet.begin(),csucsIdxSet.end());
+                    bool siker = true;
+                    for (int k=0; k<ujHaromszogekIdx.size(); k++){
+                        if (ujHaromszogekIdx[k][0]==csucsIdx[0] &&
+                            ujHaromszogekIdx[k][1]==csucsIdx[1] &&
+                            ujHaromszogekIdx[k][2]==csucsIdx[2]){
+                            siker=false;
+                            break;
+                        }
+                    }
+                    if (!siker)
+                        continue;
+                    Szakasz a(csucsok[idx],csucsok[i]), b(csucsok[i],csucsok[j]), c(csucsok[j],csucsok[idx]);
+                    for (int k=0; k<osszesSzakasz.size(); k++){
+                        if (metszikEgymast(a,osszesSzakasz[k]) ||
+                            metszikEgymast(b,osszesSzakasz[k]) ||
+                            metszikEgymast(c,osszesSzakasz[k])){
+                            siker = false;
+                            break;
+                        }
+                    }
+                    Haromszog haromszog(csucsok[idx],csucsok[i],csucsok[j]);
+                    for (int k=0; k<osszesCsucs.size(); k++){
+                        if (osszesCsucs[k]!=haromszog.A &&
+                            osszesCsucs[k]!=haromszog.B &&
+                            osszesCsucs[k]!=haromszog.C){
+                            if (haromszog.benneVanAPont(osszesCsucs[k])){
+                                siker=false;
+                                break;
+                            }
+                        }
+                    }
+                    /*
+                    for (int k=0; k<megmaradtSzakaszok.size(); k++){
+                        if (metszikEgymast(a,megmaradtSzakaszok[k]) ||
+                            metszikEgymast(b,megmaradtSzakaszok[k]) ||
+                            metszikEgymast(b,osszesSzakasz[k])){
+                            siker = false;
+                            break;
+                        }
+                    }
+                    */
+                    if (!siker)
+                        continue;
+                    ujHaromszog=true;
+                    Sikidom temp;
+                    temp.szakaszok.push_back(a);
+                    temp.szakaszok.push_back(b);
+                    temp.szakaszok.push_back(c);
+                    ujHaromszogekIdx.push_back(csucsIdx);
+                    navMesh.push_back(temp);
+                    osszesSzakasz.push_back(a);
+                    osszesSzakasz.push_back(b);
+                    osszesSzakasz.push_back(c);
+                }
+            }
+            if (!ujHaromszog)
+                break;
+        }
+
+        int minFokszam = INT_MAX;//, idx=-1;
+        /*
+        for (int i=0; i<csucsokFokszama.size(); i++){
+            if (csucsokFokszama[i]<minFokszam && csucsokFokszama[i]!=0){
+                minFokszam=csucsokFokszama[i];
+                idx=i;
+            }
+        }
+        if (idx==-1){
+            break;
+        }
+        */
+
+
+        return ret;
     }
 
     void bakeAtloNavMesh() {

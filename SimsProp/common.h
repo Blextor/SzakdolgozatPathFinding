@@ -26,7 +26,9 @@
 #define SZELES 480
 #define MAGAS 480
 
-#define EPSZ 0.001f
+
+#define EPSZ 0.0001f
+#define EPSZ2 0.000001f
 #define DEBUG false
 
 void simulation(SDL_Window &window, SDL_Renderer &renderer);
