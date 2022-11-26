@@ -149,6 +149,7 @@ struct Sikidom{
         if (!nyilt && belso){   /// ha nyilt, vagy nem a belso a fontos, akkor nem kell foglalkozni vele
             return atlok;
         }
+        //bool DEBUG=true;
         vector<Szakasz> oldalak = szakaszok;
         vector<Szakasz> atlokEsOldalak = oldalak;   /// ezekkel nem szabad metszeni magunkat
         vector<vec2> csucsok;                       /// miket akarunk osszekottetni
@@ -193,11 +194,11 @@ struct Sikidom{
         cout<<"atlokBefore: "<<atlok.size()<<endl;
         while(!stop && true){
             for (int i=0; i<szomszedCsucsIdx.size(); i++){
-                ///cout<<"Szomszedok: ";
+                if (DEBUG) cout<<"Szomszedok: ";
                 for (int j=0; j<szomszedCsucsIdx[i].size(); j++){
-                    ///cout<<szomszedCsucsIdx[i][j]<<", ";
+                    if (DEBUG) cout<<szomszedCsucsIdx[i][j]<<", ";
                 }
-                ///cout<<endl;
+                if (DEBUG) cout<<endl;
             }
             cnt++;
             stop=true;
@@ -218,6 +219,16 @@ struct Sikidom{
                         for (int l=0; l<szomszedCsucsIdx[j].size(); l++){
                             if (szomszedCsucsIdx[i][k]==szomszedCsucsIdx[j][l]){
                                 if (DEBUG) cout<<"kozos szomszed: "<<i<<" "<<j<<" -> "<<szomszedCsucsIdx[i][k]<<endl;
+                                int cntSz = 0;
+                                Haromszog hrs(csucsok[i],csucsok[j],csucsok[szomszedCsucsIdx[i][k]]);
+                                for (int z = 0; z<csucsok.size(); z++){
+                                    if (hrs.benneVanAPont(csucsok[z]))
+                                        cntSz++;
+                                    if (cntSz>3)
+                                        break;
+                                }
+                                if (cntSz>3)
+                                    continue;
                                 if (a==-1){
                                     a=szomszedCsucsIdx[i][k];
                                     aIdxK = k;
@@ -328,7 +339,7 @@ struct Palya{
         if (RANDOM)
             srand(time(NULL));
         float PI = 3.1415f;
-        for (int i=0; i<kbPontok.size(); i++){
+        for (int i=10; i<kbPontok.size(); i++){
             int hanySzog = 3+rand()%6;
             float kezdoszog = rand()%360;
             temp.szakaszok.clear();
@@ -374,7 +385,7 @@ struct Palya{
         temp.szakaszok.push_back(Szakasz(vec2(100,300),vec2(100,200)));
         temp.belso=false;
         sikidomok.push_back(temp);
-
+        /*
         temp.szakaszok.clear();
         temp.szakaszok.push_back(Szakasz(vec2(100,100),vec2(200,100)));
         temp.szakaszok.push_back(Szakasz(vec2(200,100),vec2(200,200)));
@@ -387,6 +398,13 @@ struct Palya{
         temp.belso=false;
         sikidomok.push_back(temp);
         */
+        temp.szakaszok.clear();
+        temp.szakaszok.push_back(Szakasz(vec2(100,100),vec2(300,200)));
+        temp.szakaszok.push_back(Szakasz(vec2(300,200),vec2(100,300)));
+        temp.szakaszok.push_back(Szakasz(vec2(100,300),vec2(200,200)));
+        temp.szakaszok.push_back(Szakasz(vec2(200,200),vec2(100,100)));
+        temp.belso=false;
+        sikidomok.push_back(temp);
     }
 
     void bakeNavMesh(){
@@ -916,11 +934,12 @@ struct Palya{
             }
         }
         cout<<"szakaszokA.size(): "<<szakaszokA.size()<<endl;
-        BAszakasz.clear();
-        BAszakasz.assign(szakaszokA.begin(),szakaszokA.end());
+        //BAszakasz.clear();
+        //BAszakasz.assign(szakaszokA.begin(),szakaszokA.end());
         cout<<"BAszakasz.size(): "<<BAszakasz.size()<<endl;
         //}
     }
+
 
     vector<Sikidom> szakaszokSikidomokbaSzervezese(set<Szakasz> szakaszokA){
         vector<Szakasz> megmaradtSzakaszok(szakaszokA.begin(),szakaszokA.end());
@@ -1067,6 +1086,48 @@ struct Palya{
             }
         }
         */
+        set<Szakasz> szakaszokB;
+        set<Szakasz> szakaszokC;
+        for (int i=0; i<navMesh.size(); i++){
+            for (int j=0; j<navMesh[i].szakaszok.size(); j++){
+                if (szakaszokB.find(navMesh[i].szakaszok[j])==szakaszokB.end() &&
+                    szakaszokB.find(navMesh[i].szakaszok[j].inv())==szakaszokB.end()){
+                    szakaszokB.insert(navMesh[i].szakaszok[j]);
+                } else if (szakaszokC.find(navMesh[i].szakaszok[j])==szakaszokC.end() &&
+                    szakaszokC.find(navMesh[i].szakaszok[j].inv())==szakaszokC.end()){
+                    szakaszokC.insert(navMesh[i].szakaszok[j]);
+                }
+            }
+        }
+        cout<<"szakaszokC.size(): "<<szakaszokC.size()<<endl;
+        cout<<"szakaszokB.size(): "<<szakaszokB.size()<<endl;
+        for (int i=0; i<sikidomok.size(); i++){
+            for (int j=0; j<sikidomok[i].szakaszok.size(); j++){
+                if (szakaszokB.find(sikidomok[i].szakaszok[j])==szakaszokB.end() &&
+                    szakaszokB.find(sikidomok[i].szakaszok[j].inv())==szakaszokB.end()){
+                    szakaszokB.insert(sikidomok[i].szakaszok[j]);
+                } else if (szakaszokC.find(sikidomok[i].szakaszok[j])==szakaszokC.end() &&
+                    szakaszokC.find(sikidomok[i].szakaszok[j].inv())==szakaszokC.end()){
+                    szakaszokC.insert(sikidomok[i].szakaszok[j]);
+                }
+            }
+        }
+        cout<<"szakaszokC.size(): "<<szakaszokC.size()<<endl;
+        cout<<"szakaszokB.size(): "<<szakaszokB.size()<<endl;
+        vector<Szakasz> tempSzakaszok; tempSzakaszok.assign(szakaszokC.begin(),szakaszokC.end());
+        for (int i=0; i<tempSzakaszok.size(); i++){
+            if (szakaszokB.find(tempSzakaszok[i])!=szakaszokB.end())
+                szakaszokB.erase(szakaszokB.find(tempSzakaszok[i]));
+            if (szakaszokB.find(tempSzakaszok[i].inv())!=szakaszokB.end())
+                szakaszokB.erase(szakaszokB.find(tempSzakaszok[i].inv()));
+        }
+        //szakaszokB.erase(szakaszokC.begin(),szakaszokC.end());
+        cout<<"szakaszokC.size(): "<<szakaszokC.size()<<endl;
+        cout<<"szakaszokB.size(): "<<szakaszokB.size()<<endl;
+
+        BAszakasz.clear();
+        BAszakasz.assign(szakaszokB.begin(),szakaszokB.end());
+
         return ret;
     }
 

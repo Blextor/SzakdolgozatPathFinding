@@ -29,7 +29,7 @@
 
 #define EPSZ 0.0001f
 #define EPSZ2 0.000001f
-#define DEBUG false
+#define DEBUG true
 #define RANDOM true
 
 
