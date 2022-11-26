@@ -314,17 +314,19 @@ struct Palya{
         temp.belso=false;
 
         vector<vec2> kbPontok;
+        //*
         kbPontok.push_back(vec2(100,100));
         kbPontok.push_back(vec2(300,300));
         kbPontok.push_back(vec2(300,100));
-        //kbPontok.push_back(vec2(100,300));
-        //kbPontok.push_back(vec2(200,200));
+        kbPontok.push_back(vec2(100,300));
+        kbPontok.push_back(vec2(200,200));
         kbPontok.push_back(vec2(200,100));
-        //kbPontok.push_back(vec2(100,200));
-        //kbPontok.push_back(vec2(200,300));
+        kbPontok.push_back(vec2(100,200));
+        kbPontok.push_back(vec2(200,300));
         kbPontok.push_back(vec2(300,200));
-
-        srand(time(NULL));
+        //*/
+        if (RANDOM)
+            srand(time(NULL));
         float PI = 3.1415f;
         for (int i=0; i<kbPontok.size(); i++){
             int hanySzog = 3+rand()%6;
@@ -360,7 +362,7 @@ struct Palya{
         temp.szakaszok.push_back(Szakasz(vec2(300,225),vec2(225,225)));
         temp.belso=false;
         sikidomok.push_back(temp);
-        */
+
         temp.szakaszok.clear();
         temp.szakaszok.push_back(Szakasz(vec2(100,200),vec2(200,200)));
         temp.szakaszok.push_back(Szakasz(vec2(200,200),vec2(200,300)));
@@ -373,6 +375,18 @@ struct Palya{
         temp.belso=false;
         sikidomok.push_back(temp);
 
+        temp.szakaszok.clear();
+        temp.szakaszok.push_back(Szakasz(vec2(100,100),vec2(200,100)));
+        temp.szakaszok.push_back(Szakasz(vec2(200,100),vec2(200,200)));
+        temp.szakaszok.push_back(Szakasz(vec2(200,200),vec2(200,300)));
+        temp.szakaszok.push_back(Szakasz(vec2(200,300),vec2(300,300)));
+        temp.szakaszok.push_back(Szakasz(vec2(300,300),vec2(300,200)));
+        temp.szakaszok.push_back(Szakasz(vec2(300,200),vec2(200,200)));
+        temp.szakaszok.push_back(Szakasz(vec2(200,200),vec2(100,200)));
+        temp.szakaszok.push_back(Szakasz(vec2(100,200),vec2(100,100)));
+        temp.belso=false;
+        sikidomok.push_back(temp);
+        */
     }
 
     void bakeNavMesh(){
@@ -962,7 +976,7 @@ struct Palya{
 
         vector<vector<int>> ujHaromszogekIdx;
         cout<<"EDDIG RENDBEN"<<endl;
-        for (int idx=INT_MAX; idx<csucsok.size(); idx++){
+        for (int idx=0; idx<csucsok.size(); idx++){
             bool ujHaromszog = false;
             for (int i=0; i<csucsok.size(); i++){
                 if (i==idx)
@@ -1032,20 +1046,27 @@ struct Palya{
                 break;
         }
 
-        int minFokszam = INT_MAX;//, idx=-1;
         /*
-        for (int i=0; i<csucsokFokszama.size(); i++){
-            if (csucsokFokszama[i]<minFokszam && csucsokFokszama[i]!=0){
-                minFokszam=csucsokFokszama[i];
-                idx=i;
+        while (true){
+        int minFokszam = 0;//, idx=-1;
+
+            for (int i=0; i<csucsokFokszama.size(); i++){
+                if (csucsokFokszama[i]<minFokszam && csucsokFokszama[i]!=0){
+                    minFokszam=csucsokFokszama[i];
+                    idx=i;
+                }
+            }
+            if (idx==-1){
+                break;
+            }
+            Sikidom temp;
+            while(true){
+                for (int i=0; i<megmaradtSzakaszok.size(); i++){
+
+                }
             }
         }
-        if (idx==-1){
-            break;
-        }
         */
-
-
         return ret;
     }
 
