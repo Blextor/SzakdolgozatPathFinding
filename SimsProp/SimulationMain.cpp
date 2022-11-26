@@ -158,10 +158,9 @@ struct Sikidom{
 
     vector<Szakasz> belsoAtlok(){
         vector<Szakasz> atlok;  /// ebbe kerulnek majd bele az atlok
-        if (!nyilt && belso){   /// ha nyilt, vagy nem a belso a fontos, akkor nem kell foglalkozni vele
+        if (nyilt){   /// ha nyilt, vagy nem a belso a fontos, akkor nem kell foglalkozni vele
             return atlok;
         }
-        //bool DEBUG=true;
         vector<Szakasz> oldalak = szakaszok;
         vector<Szakasz> atlokEsOldalak = oldalak;   /// ezekkel nem szabad metszeni magunkat
         vector<vec2> csucsok;                       /// miket akarunk osszekottetni
@@ -204,6 +203,7 @@ struct Sikidom{
         bool stop = false;
         int cnt=0;
         cout<<"atlokBefore: "<<atlok.size()<<endl;
+        set<Szakasz> mentettOsszesAtlo(atlok.begin(),atlok.end());
         while(!stop && true){
             for (int i=0; i<szomszedCsucsIdx.size(); i++){
                 if (DEBUG) cout<<"Szomszedok: ";
@@ -305,6 +305,15 @@ struct Sikidom{
         }
         if (DEBUG) cout<<"CNT: "<<cnt<<endl;
         if (DEBUG) cout<<"atlok: "<<atlok.size()<<endl;
+        if (belso){
+            for (int i=0; i<atlok.size(); i++){
+                if (mentettOsszesAtlo.find(atlok[i])!=mentettOsszesAtlo.end()){
+                    mentettOsszesAtlo.erase(mentettOsszesAtlo.find(atlok[i]));
+                }
+            }
+            atlok.clear();
+            atlok.assign(mentettOsszesAtlo.begin(),mentettOsszesAtlo.end());
+        }
         return atlok;
     }
 };
@@ -322,12 +331,12 @@ struct Palya{
     Palya(){
 
         Sikidom temp;
-
+        /*
         temp.szakaszok.push_back(Szakasz(vec2(0,0),vec2(0,400)));
         temp.szakaszok.push_back(Szakasz(vec2(0,400),vec2(400,400)));
         temp.szakaszok.push_back(Szakasz(vec2(400,400),vec2(400,0)));
         temp.szakaszok.push_back(Szakasz(vec2(400,0),vec2(0,0)));
-        /*
+        */
         temp.szakaszok.push_back(Szakasz(vec2(0,0),vec2(0,400)));
         temp.szakaszok.push_back(Szakasz(vec2(0,400),vec2(400,400)));
         temp.szakaszok.push_back(Szakasz(vec2(400,400),vec2(400,100)));
@@ -336,7 +345,7 @@ struct Palya{
         temp.szakaszok.push_back(Szakasz(vec2(300,50),vec2(380,60)));
         temp.szakaszok.push_back(Szakasz(vec2(380,60),vec2(300,0)));
         temp.szakaszok.push_back(Szakasz(vec2(300,0),vec2(0,0)));
-        */
+
         sikidomok.push_back(temp);
         temp.belso=false;
 
@@ -344,7 +353,7 @@ struct Palya{
         //*
         kbPontok.push_back(vec2(100,100));
         kbPontok.push_back(vec2(300,300));
-        kbPontok.push_back(vec2(300,100));
+        //kbPontok.push_back(vec2(300,100));
         kbPontok.push_back(vec2(100,300));
         kbPontok.push_back(vec2(200,200));
         kbPontok.push_back(vec2(200,100));
