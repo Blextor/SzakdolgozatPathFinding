@@ -988,8 +988,11 @@ struct Palya{
 
 
     vector<Sikidom> szakaszokSikidomokbaSzervezese(set<Szakasz> szakaszokA){
+        /// síkidomokba kell szerveznem, ez átalakult mássá
         vector<Szakasz> megmaradtSzakaszok(szakaszokA.begin(),szakaszokA.end());
+        /// csúcsokat összegyűjtöm
         vector<vec2> csucsok;
+        /// és azok fokszámát
         vector<int> csucsokFokszama;
         vector<vector<int>> csucsokhozSzakaszok;
         for (int i=0; i<megmaradtSzakaszok.size(); i++){
@@ -999,8 +1002,10 @@ struct Palya{
         set<vec2> tempCsucsok;
         copy(csucsok.begin(), csucsok.end(),inserter(tempCsucsok, tempCsucsok.end()));
         csucsok.clear();
+        /// set-be oda és visza váltva kiszűrtem a duplikációt
         csucsok.assign(tempCsucsok.begin(),tempCsucsok.end());
         csucsokFokszama.resize(csucsok.size());
+        /// megnézem a csúcsok fokszámát, és hogy mely szakaszokhoz tartoznak
         csucsokhozSzakaszok.resize(csucsok.size());
         for (int i=0; i<megmaradtSzakaszok.size(); i++){
             for (int j=0; j<csucsok.size(); j++){
@@ -1013,13 +1018,14 @@ struct Palya{
                 csucsokhozSzakaszok[j].push_back(i);
             }
         }
+        // DEBUG
         cout<<"CSUCSOK FOKSZAMA: "<<endl;
         for (int i=0; i<csucsokFokszama.size(); i++){
             cout<<csucsokFokszama[i]<<endl;
         }
 
-        vector<Sikidom> ret;
-        vector<Szakasz> osszesSzakasz;
+        vector<Sikidom> ret; /// visszatérési érték, de nem hsaznált !!!
+        vector<Szakasz> osszesSzakasz; /// újra kigyűjtöm az eddigi szakaszokat
         set<vec2> osszesCsucsSet;
         for (int i=0; i<navMesh.size(); i++){
             for (int j=0; j<navMesh[i].szakaszok.size(); j++){
