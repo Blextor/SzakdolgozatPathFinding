@@ -739,9 +739,10 @@ struct Palya{
     }
 
     void fillNavMesh(){
-        set<Szakasz> szakaszokA, szakaszokB;
-        cout<<"navMesh.size(): "<<navMesh.size()<<endl;
-        for (int i=0; i<navMesh.size(); i++){
+        /// ki kell tölteni a megmaradt helyet
+        set<Szakasz> szakaszokA, szakaszokB; /// milyen szakaszain vannak eddig, és azok hányszor szerepelnek
+        cout<<"navMesh.size(): "<<navMesh.size()<<endl; /// hány háromszögünk van eddig
+        for (int i=0; i<navMesh.size(); i++){ /// számba veszem a háromszögek oldalait
             for (int j=0; j<navMesh[i].szakaszok.size(); j++){
                 Szakasz temp(navMesh[i].szakaszok[j].p2,navMesh[i].szakaszok[j].p1);
                 if (szakaszokA.find(navMesh[i].szakaszok[j])==szakaszokA.end() &&
@@ -756,10 +757,10 @@ struct Palya{
                 }
             }
         }
-        cout<<"szakaszokA0.size(): "<<szakaszokA.size()<<endl;
-        cout<<"szakaszokB.size(): "<<szakaszokB.size()<<endl;
-        for (int i=0; i<sikidomok.size(); i++){
-            for (int j=0; j<sikidomok[i].szakaszok.size(); j++){
+        cout<<"szakaszokA0.size(): "<<szakaszokA.size()<<endl; /// az egyszer legalább szereplő szakaszok
+        cout<<"szakaszokB.size(): "<<szakaszokB.size()<<endl; /// a kétsze is szereplő szakaszok
+        for (int i=0; i<sikidomok.size(); i++){ /// minden síkidomra
+            for (int j=0; j<sikidomok[i].szakaszok.size(); j++){ /// azon minden szakaszára is lefuttatom az előzőt
                 Szakasz temp(sikidomok[i].szakaszok[j].p2,sikidomok[i].szakaszok[j].p1);
                 if (szakaszokA.find(sikidomok[i].szakaszok[j])==szakaszokA.end() &&
                     szakaszokA.find(temp)==szakaszokA.end()
@@ -774,11 +775,11 @@ struct Palya{
             }
         }
         cout<<"szakaszokA1.size(): "<<szakaszokA.size()<<endl;
-        cout<<"szakaszokB.size(): "<<szakaszokB.size()<<endl;
-        BAszakasz.assign(szakaszokB.begin(),szakaszokB.end());
+        cout<<"szakaszokB.size(): "<<szakaszokB.size()<<endl; /// most már a síkidomok oldalai néhány szakaszt megdupláztak
+        BAszakasz.assign(szakaszokB.begin(),szakaszokB.end()); /// ezek a végső szakaszok
         cout<<"BAszakasz.size(): "<<BAszakasz.size()<<endl;
 
-        vector<Szakasz> kivonandoSzakaszok(szakaszokB.begin(),szakaszokB.end());
+        vector<Szakasz> kivonandoSzakaszok(szakaszokB.begin(),szakaszokB.end()); /// megnézzük, hogy ezeket kivonva mely szakaszok szereplenek csak egyszer
         cout<<"kivonandoSzakaszok.size(): "<<kivonandoSzakaszok.size()<<endl;
         for (int i=0; i<kivonandoSzakaszok.size(); i++){
             Szakasz temp(kivonandoSzakaszok[i].p2,kivonandoSzakaszok[i].p1);
@@ -787,29 +788,32 @@ struct Palya{
             else if (szakaszokA.find(temp)!=szakaszokA.end())
                 szakaszokA.erase(szakaszokA.find(temp));
         }
-        cout<<"szakaszokA2.size(): "<<szakaszokA.size()<<endl;
+        cout<<"szakaszokA2.size(): "<<szakaszokA.size()<<endl; /// ennyi szakasz maradt, melyek egykék
+        /// azért fontos ez, mert ezek formálnak jobb esetben síkidomokat, melyeket fel kell osztani háromszögekre
 
         //while (szakaszokA.size()!=0){
-        vector<vec2> csucsok;
+        vector<vec2> csucsok; /// az összes csúcsot újra összeszámolom
         for (int i=0; i<sikidomok.size();i++){
             for (int j=0; j<sikidomok[i].szakaszok.size(); j++){
                 csucsok.push_back(sikidomok[i].szakaszok[j].p1);
             }
         }
         if (true){
+            /// megnézem a megmaradt szakaszokat
             vector<Szakasz> megmaradtSzakaszok(szakaszokA.begin(),szakaszokA.end());
             for (int i=0; i<megmaradtSzakaszok.size(); i++){
                 for (int j=i+1; j<megmaradtSzakaszok.size(); j++){
-                    Sikidom sikidom;
-                    //sikidom.szakaszok.push_back(megmaradtSzakaszok[i]);
-                    //sikidom.szakaszok.push_back(megmaradtSzakaszok[j]);
-                    Szakasz sz, torlesre;
-                    vec2 kozos;
-                    bool siker = false;
+                    /// összehasonlítom őket egymással
+                    Sikidom sikidom; /// ez lesz az esteleges háromszög változója
+                    Szakasz sz, torlesre; /// melyik az új szakasz, és kell-e törölni
+                    vec2 kozos; /// melyik a közös pontja a két vizsgált szakasznak
+                    bool siker = false; /// történt-e baj eddig? Nem.
+                    /// A négy lehetséges szakasz
                     Szakasz sz11(megmaradtSzakaszok[i].p1,megmaradtSzakaszok[j].p1);
                     Szakasz sz12(megmaradtSzakaszok[i].p1,megmaradtSzakaszok[j].p2);
                     Szakasz sz21(megmaradtSzakaszok[i].p2,megmaradtSzakaszok[j].p1);
                     Szakasz sz22(megmaradtSzakaszok[i].p2,megmaradtSzakaszok[j].p2);
+                    /// megvizsgálom azt, hogy melyik csúcsuk közös, abból jön az sz-be hogy melyik az új szakasz
                     if (megmaradtSzakaszok[i].p1==megmaradtSzakaszok[j].p1){
                         if (szakaszokA.find(sz22) != szakaszokA.end()){
                             torlesre = sz22;
@@ -854,9 +858,10 @@ struct Palya{
                         kozos = megmaradtSzakaszok[i].p2;
                         sz = Szakasz(megmaradtSzakaszok[i].p1,megmaradtSzakaszok[j].p1);
                     }
-                    else {
+                    else { /// ha egyik sem, akkor nincs közös pontjuk, és mehetünk akövetkezőre
                         continue;
                     }
+                    /// fontos, hogy ne tartalmazzon a háromszög másik csúcsot
                     int csCnt = 0;
                     Haromszog hrsz(sz.p1,sz.p2,kozos);
                     for (int k=0; k<csucsok.size(); k++){
@@ -865,11 +870,14 @@ struct Palya{
                     }
                     if (csCnt>3)
                         siker=false;
-                    if (siker){
+                    /// kiküszöbölve az idegen csúcs tartalmazáse
+                    if (siker){ /// ha minden rendben volt
+                        ///akkor a síkidomnak megadom a három oldalát
                         sikidom.szakaszok.push_back(sz);
                         sikidom.szakaszok.push_back(Szakasz(sz.p2,kozos));
                         sikidom.szakaszok.push_back(Szakasz(kozos,sz.p1));
-                        navMesh.push_back(sikidom);
+                        navMesh.push_back(sikidom); /// és hozzáadom a többihez
+                        /// és kitörlöm a használt szakaszokat, ha vannak
                         if (szakaszokA.find(megmaradtSzakaszok[i])!=szakaszokA.end())
                             szakaszokA.erase(szakaszokA.find(megmaradtSzakaszok[i]));
                         if (szakaszokA.find(megmaradtSzakaszok[i].inv())!=szakaszokA.end())
@@ -879,31 +887,34 @@ struct Palya{
                         if (szakaszokA.find(megmaradtSzakaszok[j].inv())!=szakaszokA.end())
                             szakaszokA.erase(szakaszokA.find(megmaradtSzakaszok[j].inv()));
                         szakaszokA.erase(szakaszokA.find(torlesre));
-                        //if (szakaszokA.find(sz)!=szakaszokA.end())
-                            //szakaszokA.erase(szakaszokA.find(sz));
-                        //i=INT_MAX; j=INT_MAX;
                     }
                 }
             }
         }
+        /// redukáltam a nem lefedett területeket
         cout<<"szakaszokA3.size(): "<<szakaszokA.size()<<endl;
+        /// viszont nem teljes a megoldás
 
-        vector<Szakasz> sikidomOldalak;
+        // NEM HASZNÁLT
+        /*
+        vector<Szakasz> sikidomOldalak; /// összegyűjtöm ebbe a síkidomok oldalait
         for (int i=0; i<sikidomok.size();i++){
             sikidomOldalak.insert(sikidomOldalak.end(),sikidomok[i].szakaszok.begin(),sikidomok[i].szakaszok.end());
         }
+        */
 
-
+        /// A maradék szakszokat síkidomokra bontom
+        // a visszatérési érték az lényegtelen
         vector<Sikidom> belsoSikidomok = szakaszokSikidomokbaSzervezese(szakaszokA);
 
+        // NEM HASZNÁLT, és rossz is talán
+        /*
         if (false){
             vector<Szakasz> megmaradtSzakaszok(szakaszokA.begin(),szakaszokA.end());
             vector<Szakasz> ujSzakaszok;
             for (int i=0; i<megmaradtSzakaszok.size(); i++){
                 for (int j=i+1; j<megmaradtSzakaszok.size(); j++){
                     Sikidom sikidom;
-                    //sikidom.szakaszok.push_back(megmaradtSzakaszok[i]);
-                    //sikidom.szakaszok.push_back(megmaradtSzakaszok[j]);
                     Szakasz sz, torlesre;
                     vec2 kozos;
                     bool siker = false;
@@ -962,15 +973,12 @@ struct Palya{
                             szakaszokA.erase(szakaszokA.find(megmaradtSzakaszok[j]));
                         if (szakaszokA.find(megmaradtSzakaszok[j].inv())!=szakaszokA.end())
                             szakaszokA.erase(szakaszokA.find(megmaradtSzakaszok[j].inv()));
-                        //szakaszokA.erase(szakaszokA.find(torlesre));
-                        //if (szakaszokA.find(sz)!=szakaszokA.end())
-                            //szakaszokA.erase(szakaszokA.find(sz));
-                        //i=INT_MAX; j=INT_MAX;
                     }
                     cout<<"H"<<endl;
                 }
             }
         }
+        */
         cout<<"szakaszokA.size(): "<<szakaszokA.size()<<endl;
         //BAszakasz.clear();
         //BAszakasz.assign(szakaszokA.begin(),szakaszokA.end());
