@@ -67,6 +67,7 @@ bool operator< (const HonnanPont& lhs,const HonnanPont& rhs) {
     return lhs.p<rhs.p;
 }
 
+
 /// függvény a metszésre, mert kell neki paraméter és sok helyet lehet ezzel spórolni
 bool metszikEgymast(Szakasz sz1, Szakasz sz2){
     double res = 0, s = 0, t = 0;
@@ -107,6 +108,8 @@ bool metszikVagyAtlapolodnakPrec(Szakasz sz1, Szakasz sz2){
     DistanceSegments2(sz1.p1,sz1.p2,sz2.p1,sz2.p2,res,s,t,closest2,Dret);
     return (res<EPSZ2 && ((t>EPSZ2 && t<1.0f-EPSZ2) || (s>EPSZ2 && s<1.0f-EPSZ2) ));
 }
+
+
 
 /// nem egy síkidom, külön Önlabon megvalósított osztály
 struct Haromszog{
@@ -214,7 +217,7 @@ struct Sikidom{
 
         bool stop = false; /// ha baj van, álljon meg
         int cnt=0;  // CSAK DEBUG, hogy hányszor fut le
-        cout<<"atlokBefore: "<<atlok.size()<<endl;
+        if (DEBUG2) cout<<"atlokBefore: "<<atlok.size()<<endl;
         set<Szakasz> mentettOsszesAtlo(atlok.begin(),atlok.end()); /// ennyi az osszes egymást nem metsző átló
         while(!stop){ /// amíg nics baj
             // CSAK DEBUG
@@ -475,9 +478,9 @@ struct Palya{
             vector<Szakasz> temp = sikidomok[i].belsoAtlok();   /// lekérem az átlóikat
             belsoAtlokTemp.insert(belsoAtlokTemp.end(), temp.begin(), temp.end()); /// majd hozzátoldom a meglévőkhöz
         }
-        cout<<"belsoAtlokTemp "<<belsoAtlokTemp.size()<<endl; /// DEBUG
-        cout<<"szakaszok.size()"<<szakaszok.size()<<endl;
-        cout<<halmaz.size()<<endl;
+        if (DEBUG2) cout<<"belsoAtlokTemp "<<belsoAtlokTemp.size()<<endl; /// DEBUG
+        if (DEBUG2) cout<<"szakaszok.size()"<<szakaszok.size()<<endl;
+        if (DEBUG2) cout<<halmaz.size()<<endl;
 
         for (int j=0; j<halmaz.size(); j++){ /// végigmegyek az összes síkidomon
             if (DEBUG) cout<<"j: "<<j<<endl;
@@ -577,7 +580,7 @@ struct Palya{
             }
         }
 
-        cout<<"EDDIG JO"<<endl;
+        if (DEBUG2) cout<<"EDDIG JO"<<endl;
         /// rengeteg lehetséges háromszög maradhatott hátra, például ha egy sokszög önmagával kelljen képeznie háromszöget
         for (int j=0; j<halmaz.size(); j++){ /// végigmegyek a síkidomokon
             for (int i=0; i<halmaz[j].size(); i++){ /// azok csúcsain
@@ -691,7 +694,7 @@ struct Palya{
         /// BTW oldalak szám - 2 + 2 * síkidomok száma.
         /// Egy négyzetnek csak két háromszöge van az egyik átlója mentén
         /// mert matek
-        cout<<"SZAKASZOK"<<endl;
+        if (DEBUG2) cout<<"SZAKASZOK"<<endl;
         /// itt még azok a háromszögek nincsenek meg, amik nem a síkidomok oldalival dolgoznak
         // CSAK DEBUG !!!
         for (int i=0; i<szakaszok.size() && DEBUG; i++){ /// megnézem az összes szakaszt
@@ -741,7 +744,7 @@ struct Palya{
     void fillNavMesh(){
         /// ki kell tölteni a megmaradt helyet
         set<Szakasz> szakaszokA, szakaszokB; /// milyen szakaszain vannak eddig, és azok hányszor szerepelnek
-        cout<<"navMesh.size(): "<<navMesh.size()<<endl; /// hány háromszögünk van eddig
+        if (DEBUG2) cout<<"navMesh.size(): "<<navMesh.size()<<endl; /// hány háromszögünk van eddig
         for (int i=0; i<navMesh.size(); i++){ /// számba veszem a háromszögek oldalait
             for (int j=0; j<navMesh[i].szakaszok.size(); j++){
                 Szakasz temp(navMesh[i].szakaszok[j].p2,navMesh[i].szakaszok[j].p1);
@@ -757,8 +760,8 @@ struct Palya{
                 }
             }
         }
-        cout<<"szakaszokA0.size(): "<<szakaszokA.size()<<endl; /// az egyszer legalább szereplő szakaszok
-        cout<<"szakaszokB.size(): "<<szakaszokB.size()<<endl; /// a kétsze is szereplő szakaszok
+        if (DEBUG2) cout<<"szakaszokA0.size(): "<<szakaszokA.size()<<endl; /// az egyszer legalább szereplő szakaszok
+        if (DEBUG2) cout<<"szakaszokB.size(): "<<szakaszokB.size()<<endl; /// a kétsze is szereplő szakaszok
         for (int i=0; i<sikidomok.size(); i++){ /// minden síkidomra
             for (int j=0; j<sikidomok[i].szakaszok.size(); j++){ /// azon minden szakaszára is lefuttatom az előzőt
                 Szakasz temp(sikidomok[i].szakaszok[j].p2,sikidomok[i].szakaszok[j].p1);
@@ -774,13 +777,13 @@ struct Palya{
                 }
             }
         }
-        cout<<"szakaszokA1.size(): "<<szakaszokA.size()<<endl;
-        cout<<"szakaszokB.size(): "<<szakaszokB.size()<<endl; /// most már a síkidomok oldalai néhány szakaszt megdupláztak
+        if (DEBUG2) cout<<"szakaszokA1.size(): "<<szakaszokA.size()<<endl;
+        if (DEBUG2) cout<<"szakaszokB.size(): "<<szakaszokB.size()<<endl; /// most már a síkidomok oldalai néhány szakaszt megdupláztak
         BAszakasz.assign(szakaszokB.begin(),szakaszokB.end()); /// ezek a végső szakaszok
-        cout<<"BAszakasz.size(): "<<BAszakasz.size()<<endl;
+        if (DEBUG2) cout<<"BAszakasz.size(): "<<BAszakasz.size()<<endl;
 
         vector<Szakasz> kivonandoSzakaszok(szakaszokB.begin(),szakaszokB.end()); /// megnézzük, hogy ezeket kivonva mely szakaszok szereplenek csak egyszer
-        cout<<"kivonandoSzakaszok.size(): "<<kivonandoSzakaszok.size()<<endl;
+        if (DEBUG2) cout<<"kivonandoSzakaszok.size(): "<<kivonandoSzakaszok.size()<<endl;
         for (int i=0; i<kivonandoSzakaszok.size(); i++){
             Szakasz temp(kivonandoSzakaszok[i].p2,kivonandoSzakaszok[i].p1);
             if (szakaszokA.find(kivonandoSzakaszok[i])!=szakaszokA.end())
@@ -788,7 +791,7 @@ struct Palya{
             else if (szakaszokA.find(temp)!=szakaszokA.end())
                 szakaszokA.erase(szakaszokA.find(temp));
         }
-        cout<<"szakaszokA2.size(): "<<szakaszokA.size()<<endl; /// ennyi szakasz maradt, melyek egykék
+        if (DEBUG2) cout<<"szakaszokA2.size(): "<<szakaszokA.size()<<endl; /// ennyi szakasz maradt, melyek egykék
         /// azért fontos ez, mert ezek formálnak jobb esetben síkidomokat, melyeket fel kell osztani háromszögekre
 
         //while (szakaszokA.size()!=0){
@@ -892,7 +895,7 @@ struct Palya{
             }
         }
         /// redukáltam a nem lefedett területeket
-        cout<<"szakaszokA3.size(): "<<szakaszokA.size()<<endl;
+        if (DEBUG2) cout<<"szakaszokA3.size(): "<<szakaszokA.size()<<endl;
         /// viszont nem teljes a megoldás
 
         // NEM HASZNÁLT
@@ -979,10 +982,10 @@ struct Palya{
             }
         }
         */
-        cout<<"szakaszokA.size(): "<<szakaszokA.size()<<endl;
+        if (DEBUG2) cout<<"szakaszokA.size(): "<<szakaszokA.size()<<endl;
         //BAszakasz.clear();
         //BAszakasz.assign(szakaszokA.begin(),szakaszokA.end());
-        cout<<"BAszakasz.size(): "<<BAszakasz.size()<<endl;
+        if (DEBUG2) cout<<"BAszakasz.size(): "<<BAszakasz.size()<<endl;
         //}
     }
 
@@ -1019,20 +1022,21 @@ struct Palya{
             }
         }
         // DEBUG
-        cout<<"CSUCSOK FOKSZAMA: "<<endl;
-        for (int i=0; i<csucsokFokszama.size(); i++){
+        if (DEBUG2) cout<<"CSUCSOK FOKSZAMA: "<<endl;
+        for (int i=0; i<csucsokFokszama.size() && DEBUG2; i++){
             cout<<csucsokFokszama[i]<<endl;
         }
 
         vector<Sikidom> ret; /// visszatérési érték, de nem hsaznált !!!
         vector<Szakasz> osszesSzakasz; /// újra kigyűjtöm az eddigi szakaszokat
-        set<vec2> osszesCsucsSet;
+        set<vec2> osszesCsucsSet; /// és csúcsot
         for (int i=0; i<navMesh.size(); i++){
             for (int j=0; j<navMesh[i].szakaszok.size(); j++){
                 osszesSzakasz.push_back(navMesh[i].szakaszok[j]);
                 osszesCsucsSet.insert(navMesh[i].szakaszok[j].p1);
             }
         }
+        /// lista csúcsokból
         vector<vec2> osszesCsucs; osszesCsucs.assign(osszesCsucsSet.begin(),osszesCsucsSet.end());
         set<Szakasz> tempOsszesSzakasz;
         copy(osszesSzakasz.begin(), osszesSzakasz.end(),inserter(tempOsszesSzakasz, tempOsszesSzakasz.end()));
@@ -1042,23 +1046,29 @@ struct Palya{
             if (tempOsszesSzakasz.find(megmaradtSzakaszok[i].inv()) != tempOsszesSzakasz.end())
                 tempOsszesSzakasz.erase(tempOsszesSzakasz.find(megmaradtSzakaszok[i].inv()));
         }
+        /// lista a szakaszokból
         osszesSzakasz.clear();
         osszesSzakasz.assign(tempOsszesSzakasz.begin(),tempOsszesSzakasz.end());
 
+        /// miket találok új háromszögeket
         vector<vector<int>> ujHaromszogekIdx;
-        cout<<"EDDIG RENDBEN"<<endl;
+        if (DEBUG2) cout<<"EDDIG RENDBEN"<<endl;
+        /// tripla iterálás a csúcsokon
         for (int idx=0; idx<csucsok.size(); idx++){
             bool ujHaromszog = false;
             for (int i=0; i<csucsok.size(); i++){
                 if (i==idx)
                     continue;
+                /// emiatt csak 2 és fél iterálás, DE NINCSEN MÁR SOK
                 for (int j=i+1; j<csucsok.size(); j++){
                     if (j==idx)
                         continue;
                     set<int> csucsIdxSet={idx,i,j};
                     vector<int> csucsIdx;
                     csucsIdx.assign(csucsIdxSet.begin(),csucsIdxSet.end());
+                    /// csúcsok sorba vannak rendezve
                     bool siker = true;
+                    /// nem létezhet ilyen háromszög az újak között
                     for (int k=0; k<ujHaromszogekIdx.size(); k++){
                         if (ujHaromszogekIdx[k][0]==csucsIdx[0] &&
                             ujHaromszogekIdx[k][1]==csucsIdx[1] &&
@@ -1069,7 +1079,9 @@ struct Palya{
                     }
                     if (!siker)
                         continue;
+                    /// ha nincs olyan háromszög, akkor lesz, van 3 szakasz hozzá
                     Szakasz a(csucsok[idx],csucsok[i]), b(csucsok[i],csucsok[j]), c(csucsok[j],csucsok[idx]);
+                    /// ezen 3 szakasz metsz másikokat?
                     for (int k=0; k<osszesSzakasz.size(); k++){
                         if (metszikEgymast(a,osszesSzakasz[k]) ||
                             metszikEgymast(b,osszesSzakasz[k]) ||
@@ -1078,6 +1090,9 @@ struct Palya{
                             break;
                         }
                     }
+                    if (!siker)
+                        continue;
+                    /// és tartalmaz más pontot?
                     Haromszog haromszog(csucsok[idx],csucsok[i],csucsok[j]);
                     for (int k=0; k<osszesCsucs.size(); k++){
                         if (osszesCsucs[k]!=haromszog.A &&
@@ -1089,6 +1104,7 @@ struct Palya{
                             }
                         }
                     }
+                    // NEM HASZNÁLT, talán rossz is
                     /*
                     for (int k=0; k<megmaradtSzakaszok.size(); k++){
                         if (metszikEgymast(a,megmaradtSzakaszok[k]) ||
@@ -1101,18 +1117,22 @@ struct Palya{
                     */
                     if (!siker)
                         continue;
+                    /// sikerült új háromszöget találni
                     ujHaromszog=true;
+                    /// létre is hozom a háromszöget
                     Sikidom temp;
                     temp.szakaszok.push_back(a);
                     temp.szakaszok.push_back(b);
                     temp.szakaszok.push_back(c);
-                    ujHaromszogekIdx.push_back(csucsIdx);
-                    navMesh.push_back(temp);
+                    ujHaromszogekIdx.push_back(csucsIdx);   /// eltárolom az új háromszög csúcsainak indexét
+                    navMesh.push_back(temp);    /// meg magát a háromszöget
+                    /// meg az új szakaszokat nem elmetszésre
                     osszesSzakasz.push_back(a);
                     osszesSzakasz.push_back(b);
                     osszesSzakasz.push_back(c);
                 }
             }
+            /// ha nem találtam új háromszöget, akkor végeztünk, vagy más megközelítés kell
             if (!ujHaromszog)
                 break;
         }
@@ -1138,6 +1158,9 @@ struct Palya{
             }
         }
         */
+
+        /// ez ismétlés, újra ki kell számítani (egyre kevesebb eredméynt kell kiadnia, így egyre gyorsabb)
+        /// ki kell számoli, hogy mik a megmaradt oldalak
         set<Szakasz> szakaszokB;
         set<Szakasz> szakaszokC;
         for (int i=0; i<navMesh.size(); i++){
@@ -1151,8 +1174,8 @@ struct Palya{
                 }
             }
         }
-        cout<<"szakaszokC.size(): "<<szakaszokC.size()<<endl;
-        cout<<"szakaszokB.size(): "<<szakaszokB.size()<<endl;
+        if (DEBUG2) cout<<"szakaszokC.size(): "<<szakaszokC.size()<<endl;
+        if (DEBUG2) cout<<"szakaszokB.size(): "<<szakaszokB.size()<<endl;
         for (int i=0; i<sikidomok.size(); i++){
             for (int j=0; j<sikidomok[i].szakaszok.size(); j++){
                 if (szakaszokB.find(sikidomok[i].szakaszok[j])==szakaszokB.end() &&
@@ -1164,8 +1187,8 @@ struct Palya{
                 }
             }
         }
-        cout<<"szakaszokC.size(): "<<szakaszokC.size()<<endl;
-        cout<<"szakaszokB.size(): "<<szakaszokB.size()<<endl;
+        if (DEBUG2) cout<<"szakaszokC.size(): "<<szakaszokC.size()<<endl;
+        if (DEBUG2) cout<<"szakaszokB.size(): "<<szakaszokB.size()<<endl;
         vector<Szakasz> tempSzakaszok; tempSzakaszok.assign(szakaszokC.begin(),szakaszokC.end());
         for (int i=0; i<tempSzakaszok.size(); i++){
             if (szakaszokB.find(tempSzakaszok[i])!=szakaszokB.end())
@@ -1173,30 +1196,26 @@ struct Palya{
             if (szakaszokB.find(tempSzakaszok[i].inv())!=szakaszokB.end())
                 szakaszokB.erase(szakaszokB.find(tempSzakaszok[i].inv()));
         }
-        //szakaszokB.erase(szakaszokC.begin(),szakaszokC.end());
-        cout<<"szakaszokC.size(): "<<szakaszokC.size()<<endl;
-        cout<<"szakaszokB.size(): "<<szakaszokB.size()<<endl;
+        if (DEBUG2) cout<<"szakaszokC.size(): "<<szakaszokC.size()<<endl;
+        if (DEBUG2) cout<<"szakaszokB.size(): "<<szakaszokB.size()<<endl;
 
         BAszakasz.clear();
         BAszakasz.assign(szakaszokB.begin(),szakaszokB.end());
 
-        /*
-        TODO, create sikidomok
-        */
-
         while (true){
             int z = BAszakasz.size();
-            cout<<"BAszakasz.size(): PQ: "<<BAszakasz.size()<<endl;
-            cout<<"szakaszBA.size(): PQ: "<<szakaszBA.size()<<endl;
+            if (DEBUG2) cout<<"BAszakasz.size(): PQ: "<<BAszakasz.size()<<endl;
+            if (DEBUG2) cout<<"szakaszBA.size(): PQ: "<<szakaszBA.size()<<endl;
             if (z==0)
                 break;
+            /// BAszakasz-szal dolgozik, redukálja 0-ig
             navMeshFillBelsoAtlok();
 
             if (z==BAszakasz.size())
                 break;
         }
-        cout<<"BAszakasz.size(): PQ: "<<BAszakasz.size()<<endl;
-        cout<<"szakaszBA.size(): PQ: "<<szakaszBA.size()<<endl;
+        if (DEBUG2) cout<<"BAszakasz.size(): PQ: "<<BAszakasz.size()<<endl;
+        if (DEBUG2) cout<<"szakaszBA.size(): PQ: "<<szakaszBA.size()<<endl;
 
         BAszakasz=szakaszBA;
 
@@ -1204,7 +1223,12 @@ struct Palya{
     }
 
     void navMeshFillBelsoAtlok(){
+        /// ha az eddig megoldási próbálkozások nem teljesek, akkor itt van ez
+        /// nem teljes: nem észrevett hiba miatt, vagy anomália okán, de legfőképp számítási pontosság miatt a metszésnél
+        /// ez ennek okán már nem háromszögeket, hanem csak szakaszokat kreál
+        /// végén csak a szakaszok összességéből kreálok egy gráf hálót
 
+        /// kellenek a csúcsok és a fokszámaik
         set<vec2> csucsokTemp;
         vector<int> csucsokFokszama;
         for (int i=0; i<BAszakasz.size(); i++){
@@ -1229,6 +1253,7 @@ struct Palya{
             }
         }
 
+        /// megkeresem a legkisebb fokszámú csúcsot
         int idx = -1, minFokszam = INT_MAX;
         for (int i=0; i<csucsokFokszama.size(); i++){
             if (csucsokFokszama[i]<minFokszam &&csucsokFokszama[i]>0){
@@ -1236,23 +1261,31 @@ struct Palya{
                 minFokszam=csucsokFokszama[i];
             }
         }
+        /// ha nincs csúcs, akkor return
         if (idx==-1){
             cout<<"VEGE"<<endl;
             return;
         }
 
+        /// legkisebb fokszámú csúcsból indulva megnézem, mit lehet onnan elérni
         set<HonnanPont> eddigiPontok;
         vector<HonnanPont> aktualisPontok;
         HonnanPont elsoPont(csucsok[idx]);
         HonnanPont vegsoPont;
         aktualisPontok.push_back(elsoPont);
         bool stop = false;
-        cout<<"A"<<endl;
+        if (DEBUG) cout<<"A"<<endl;
+        /// aktuális ponotkat kifejtem, azokból lesznek új pontok
+        /// aktuális pontok átkerülnek az eddigi-ekbe, és az aktuálisba meg szűrve az újak
+        /// ha ugyan azon csúcshoz ér, akkor ott van egy kör és síkidomot generál belőle
+        /// itt csak egy irányba lehet haladni
         while (!stop){
 
-            cout<<"B"<<endl;
+            if (DEBUG) cout<<"B"<<endl;
             vector<HonnanPont> ujPontok;
 
+            /// ha nincs kifejtendő pont, vagy 1 a fokszáma az rossz
+            /// törlése a pontnak/szaksznak és return, újrapróbálkozás
             if (aktualisPontok.size()==0 || minFokszam<2){
                 for (int i=0; i<BAszakasz.size(); i++){
                     if (BAszakasz[i].p1==elsoPont.p){
@@ -1266,8 +1299,10 @@ struct Palya{
                 return;
             }
 
+            /// kifejtem az aktuális pontokat
             for (int i=0; i<aktualisPontok.size(); i++){
                 for (int j=0; j<BAszakasz.size(); j++){
+                    /// eltárolom az új pontokba a felfedezett pontot, és hogy honnan jött
                     if (aktualisPontok[i].p==BAszakasz[j].p1 && aktualisPontok[i].honnan!=BAszakasz[j].p2 ){
                         ujPontok.push_back(HonnanPont(BAszakasz[j].p2,aktualisPontok[i].p));
                     }
@@ -1276,7 +1311,8 @@ struct Palya{
                     }
                 }
             }
-            cout<<"C"<<endl;
+            if (DEBUG) cout<<"C"<<endl;
+            /// megnézem, hogy véletlen nem szerepel-e már az eddigiPontok-ban az egyik aktuális
             for (int i=0; i<aktualisPontok.size(); i++){
                 if (eddigiPontok.find(aktualisPontok[i])!=eddigiPontok.end()){
                     cout<<"AKTUALIS VEG"<<endl;
@@ -1284,45 +1320,56 @@ struct Palya{
                     stop=true;
                     break;
                 } else {
+                    /// egyébként eltárolom
                     eddigiPontok.insert(aktualisPontok[i]);
                 }
             }
             if (stop)
                 break;
-            cout<<"D"<<endl;
+            if (DEBUG) cout<<"D"<<endl;
             aktualisPontok.clear();
             set<HonnanPont> aktualisTempSet;
+            /// megnézem az új pontokat is, hogy van-e már bennük másodjára előforduló
+            /// ha van, akkor megvan a kör
             for (int i=0; i<ujPontok.size(); i++){
                 if (eddigiPontok.find(ujPontok[i])!=eddigiPontok.end()){
-                    cout<<"UJ EDDIGI VEG"<<endl;
+                    if (DEBUG) cout<<"UJ EDDIGI VEG"<<endl;
                     vegsoPont = ujPontok[i];
                     stop=true;
                     break;
                 } else if (aktualisTempSet.find(ujPontok[i])!=aktualisTempSet.end()){
-                    cout<<"UJ AKTUALIS VEG"<<endl;
+                    if (DEBUG) cout<<"UJ AKTUALIS VEG"<<endl;
                     vegsoPont = ujPontok[i];
                     stop=true;
                     break;
                 } else {
+                    /// ha nincs, akkor hozzáadom
                     aktualisTempSet.insert(ujPontok[i]);
                 }
             }
-            cout<<"E"<<endl;
+            if (DEBUG) cout<<"E"<<endl;
+            /// szűrt új pontok
             aktualisPontok.assign(aktualisTempSet.begin(), aktualisTempSet.end());
-            cout<<"E2 "<<aktualisPontok.size()<<endl;
+            if (DEBUG) cout<<"E2 "<<aktualisPontok.size()<<endl;
 
+            /// ha megvagyunk akkor az újakat is hozzáadjuk, nem lesz benne a végső
             if (stop){
                 eddigiPontok.insert(aktualisPontok.begin(), aktualisPontok.end());
                 break;
             }
         }
-        cout<<"F"<<endl;
+        if (DEBUG) cout<<"F"<<endl;
+        /// a végső csúcs nincs benne a felfedezett csúcsokban
+        /// csak az elsőként felfedezett módja
         Sikidom temp;
+        /// kigyűjtöm melyik a végső pontnak a felfedezett megfelelője
         HonnanPont vegsoPontA = *eddigiPontok.find(vegsoPont);
+        // DEBUG
         vector<HonnanPont> tempH; tempH.assign(eddigiPontok.begin(),eddigiPontok.end());
-        for(int i=0; i<tempH.size(); i++){
+        for(int i=0; i<tempH.size() && DEBUG; i++){
             cout<<tempH[i].p.x<<" "<<tempH[i].p.y<<", "<<tempH[i].honnan.x<<" "<<tempH[i].honnan.y<<endl;
         }
+        /// kigyűjti a szakaszokat a vágső pont felfedezettjéből
         while (vegsoPontA.p!=elsoPont.p){
             if (eddigiPontok.find(HonnanPont(vegsoPontA.honnan))==eddigiPontok.end()){
                 cout<<"BAJOS"<<endl;
@@ -1331,21 +1378,24 @@ struct Palya{
             temp.szakaszok.push_back(Szakasz(vegsoPontA.p,vegsoPontA.honnan));
             vegsoPontA=ptemp;
         }
-        cout<<"G"<<endl;
+
+        if (DEBUG) cout<<"G"<<endl;
         vector<Szakasz> sikidomEleje;
         sikidomEleje.push_back(Szakasz(vegsoPont.honnan,vegsoPont.p));
         vegsoPontA = *eddigiPontok.find(HonnanPont(vegsoPont.honnan));
+        /// és kigyűjtöm a végső pontból visszafejtve
         while (vegsoPontA.p!=elsoPont.p){
             if (eddigiPontok.find(HonnanPont(vegsoPontA.honnan))==eddigiPontok.end())
-                cout<<"BAJOS"<<endl;
+                if (DEBUG) cout<<"BAJOS"<<endl;
             HonnanPont ptemp = *eddigiPontok.find(HonnanPont(vegsoPontA.honnan));
             sikidomEleje.push_back(Szakasz(vegsoPontA.honnan,vegsoPontA.p));
             vegsoPontA=ptemp;
         }
-        cout<<"H"<<endl;
+        if (DEBUG) cout<<"H"<<endl;
+        /// helyes sorrendbe rendezem a szakaszokat
         reverse(temp.szakaszok.begin(),temp.szakaszok.end());
         temp.szakaszok.insert(temp.szakaszok.end(),sikidomEleje.begin(),sikidomEleje.end());
-        //temp.szakaszok=sikidomEleje;
+        /// felhasznált szakaszok törlése
         set<Szakasz> batemp(BAszakasz.begin(),BAszakasz.end());
         for (int i=0; i<temp.szakaszok.size(); i++){
             if (batemp.find(temp.szakaszok[i])!=batemp.end()){
@@ -1360,13 +1410,15 @@ struct Palya{
         reverse(temp.szakaszok.begin(), temp.szakaszok.end());
         temp.belso=false;
         vector<Szakasz> belsok = temp.belsoAtlok();
-        cout<<"SIKIDOM: "<<temp.szakaszok.size()<<", "<<belsok.size()<<endl;
-        for (int i=0; i<temp.szakaszok.size();i++){
+        if (DEBUG) cout<<"SIKIDOM: "<<temp.szakaszok.size()<<", "<<belsok.size()<<endl;
+        for (int i=0; i<temp.szakaszok.size() && DEBUG;i++){
             cout<<temp.szakaszok[i].p1.x<<" "<<temp.szakaszok[i].p1.y<<", "<<temp.szakaszok[i].p2.x<<" "<<temp.szakaszok[i].p2.y<<endl;
         }
+        /// gyűjtöm a belső átlókat, mert azok lesznek végül a lényegesek, ezek összessége az, ami hiányzik a gráfhoz
         szakaszBA.insert(szakaszBA.end(),belsok.begin(),belsok.end());
     }
 
+    /// DEBUG, de kiszámolja és megjeleníti a síkidomok átlóit
     void bakeAtloNavMesh() {
         for (int i=0; i<sikidomok.size(); i++){
             vector<Szakasz> temp = sikidomok[i].belsoAtlok();
@@ -1374,6 +1426,7 @@ struct Palya{
         }
     }
 
+    /// pálya megjelenítése
     void draw(SDL_Renderer &renderer, vec2 cameraPos){
         boxRGBA(&renderer,posX-cameraPos.x,posY-cameraPos.y,posX+sizeX-cameraPos.x,posY+sizeY-cameraPos.y,100,100,100,255);
         for (int i=0; i<sikidomok.size(); i++){
