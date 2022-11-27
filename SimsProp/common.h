@@ -30,8 +30,15 @@
 #define EPSZ 0.001f
 #define EPSZ2 0.000001f
 #define DEBUG false
-#define RANDOM true
+#define RANDOM false
 
+
+/**
+https://liu.diva-portal.org/smash/get/diva2:1560399/FULLTEXT01.pdf szinte a teljes NavMesh (nem gondol a járókelõk szélességére)
+
+
+
+*/
 
 void simulation(SDL_Window &window, SDL_Renderer &renderer);
 

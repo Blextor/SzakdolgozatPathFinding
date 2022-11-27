@@ -274,6 +274,7 @@ bool operator== (const vec2& lhs,const vec2& rhs);
 
 bool operator< (const vec2& lhs,const vec2& rhs);
 
+
 void DistanceSegments3Console(
     vec3 const& P0, vec3 const& P1,
     vec3 const& Q0, vec3 const& Q1,

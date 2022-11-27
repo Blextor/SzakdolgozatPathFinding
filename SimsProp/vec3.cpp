@@ -1,6 +1,9 @@
 #include "common.h"
 #include "vec3.h"
 
+
+/// https://www.geometrictools.com/GTE/Samples/Distance/DistanceSegments3/DistanceSegments3Console.cpp
+/// metszépontot számít, kissé pontatlan talán
 void DistanceSegments3Console(
     vec3 const& P0, vec3 const& P1,
     vec3 const& Q0, vec3 const& Q1,

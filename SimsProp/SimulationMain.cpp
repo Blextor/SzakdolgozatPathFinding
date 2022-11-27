@@ -3,7 +3,7 @@
 
 using namespace std;
 
-
+// NEM HASZNÁLT
 struct Pont{
     vec2 p;
 /*
@@ -15,7 +15,7 @@ struct Pont{
 
 
 
-
+/// két pontot tartalmaz
 struct Szakasz{
     vec2 p1;
     vec2 p2;
@@ -25,10 +25,12 @@ struct Szakasz{
         p1=q1; p2=q2;
     }
 
+    /// szükséges néha pontok felcserélése
     Szakasz inv(){
         return Szakasz(p2,p1);
     }
 
+    /// meg lehet jeleníteni
     void draw(SDL_Renderer &renderer, vec2 cameraPos, int r = 255, int g = 255, int b = 23){
             lineRGBA(&renderer,
                      p1.x-cameraPos.x,p1.y-cameraPos.y,
@@ -37,20 +39,20 @@ struct Szakasz{
     }
 };
 
+/// két szakasz egyenlőségének definiálása, nem vektorok, nem irányítottak
 bool operator== (const Szakasz& lhs,const Szakasz& rhs) {
-
     return (lhs.p1==rhs.p1 && lhs.p2==rhs.p2) || (lhs.p2==rhs.p1 && lhs.p1==rhs.p2);
 }
 
+/// set<> -hez szükséges a rendezésnél
 bool operator< (const Szakasz& lhs,const Szakasz& rhs) {
-    //if (lhs==rhs)
-        //return false;
     if (lhs.p1==rhs.p1)
         return lhs.p2<rhs.p2;
     return lhs.p1<rhs.p1;
 }
 
 
+/// iterálás során szükséges, hogy hol tartok, és honnan jöttem
 struct HonnanPont{
     vec2 p;
     vec2 honnan;
@@ -60,10 +62,12 @@ struct HonnanPont{
     HonnanPont(vec2 P, vec2 HONNAN){p=P; honnan=HONNAN;}
 };
 
+/// ezek rendezéséhez szükség van erre
 bool operator< (const HonnanPont& lhs,const HonnanPont& rhs) {
     return lhs.p<rhs.p;
 }
 
+/// függvény a metszésre, mert kell neki paraméter és sok helyet lehet ezzel spórolni
 bool metszikEgymast(Szakasz sz1, Szakasz sz2){
     double res = 0, s = 0, t = 0;
     vec2 closest2[2];
@@ -72,6 +76,8 @@ bool metszikEgymast(Szakasz sz1, Szakasz sz2){
     return (!Dret && res<EPSZ && ((t>EPSZ && t<1.0f-EPSZ) || (s>EPSZ && s<1.0f-EPSZ) ));
 }
 
+/// precízebb, de mégsem
+// NEM HASZNÁLT
 bool metszikEgymastPrec(Szakasz sz1, Szakasz sz2){
     double res = 0, s = 0, t = 0;
     vec2 closest2[2];
@@ -80,6 +86,7 @@ bool metszikEgymastPrec(Szakasz sz1, Szakasz sz2){
     return (!Dret && res<EPSZ2 && ((t>EPSZ2 && t<1.0f-EPSZ2) || (s>EPSZ2 && s<1.0f-EPSZ2) ));
 }
 
+/// nincs megengedve az, hogy a metszésen kívül párhozamosan illeszkedjenek egmyásra, esetleg hogy ugyan azok legyenek
 bool metszikVagyAtlapolodnak(Szakasz sz1, Szakasz sz2){
     if ((sz1.p1 == sz2.p1 && sz1.p2 == sz2.p2) || (sz1.p2 == sz2.p1 && sz1.p1 == sz2.p2))
         return true;
@@ -90,6 +97,7 @@ bool metszikVagyAtlapolodnak(Szakasz sz1, Szakasz sz2){
     return (res<EPSZ && ((t>EPSZ && t<1.0f-EPSZ) || (s>EPSZ && s<1.0f-EPSZ) ));
 }
 
+// NEM HASZNÁLT
 bool metszikVagyAtlapolodnakPrec(Szakasz sz1, Szakasz sz2){
     if ((sz1.p1 == sz2.p1 && sz1.p2 == sz2.p2) || (sz1.p2 == sz2.p1 && sz1.p1 == sz2.p2))
         return true;
@@ -100,16 +108,18 @@ bool metszikVagyAtlapolodnakPrec(Szakasz sz1, Szakasz sz2){
     return (res<EPSZ2 && ((t>EPSZ2 && t<1.0f-EPSZ2) || (s>EPSZ2 && s<1.0f-EPSZ2) ));
 }
 
+/// nem egy síkidom, külön Önlabon megvalósított osztály
 struct Haromszog{
-    bool torolt = false;
-    vec2 A, B, C;
-    int id;
+    bool torolt = false; // NEM HASZÁLT
+    vec2 A, B, C; /// három csúcs
+    int id; /// melyikhely tartozik
 
-    double area()
+    double area() /// területét adja vissza
     {
        return abs((A.x*(B.y-C.y) + B.x*(C.y-A.y)+ C.x*(A.y-B.y))/2.0);
     }
 
+    /// terület alapján adja meg, hogy egy pont részét képzi-e, vagy sem
     bool benneVanAPont(vec2 pont){
         vec2 csucs(pont);
         //Csucs *cs1 = &csucs;
@@ -128,11 +138,13 @@ struct Haromszog{
     }
 };
 
+/// tetszőleges szakaszok halmaza, külsőleg kell rendezni a szakaszokat, hogy irányba álljanak
 struct Sikidom{
-    vector<Szakasz> szakaszok;
-    bool nyilt = false;
-    bool belso = true;
+    vector<Szakasz> szakaszok; /// síkidom oldalai
+    bool nyilt = false; /// saját farkába harap a kígyó?
+    bool belso = true; /// ezen belül vagy kívül lehet mozogni
 
+    /// megjelenítés
     void draw(SDL_Renderer &renderer, vec2 cameraPos, bool navMesh=false){
         int r = 255, g=0, b=0;
         if (navMesh){
@@ -156,6 +168,7 @@ struct Sikidom{
         }
     }
 
+    /// belső vagy a külső átlókért felel
     vector<Szakasz> belsoAtlok(){
         vector<Szakasz> atlok;  /// ebbe kerulnek majd bele az atlok
         if (nyilt){   /// ha nyilt, vagy nem a belso a fontos, akkor nem kell foglalkozni vele
@@ -188,114 +201,117 @@ struct Sikidom{
         }
         vector<vector<int>> szomszedCsucsIdx(csucsok.size()); /// eltárolom, hogy mely csúcsok melyekkel vannak összekötve
         for (int i=0; i<atlokEsOldalak.size(); i++){    /// megnézem, hogy végül kik lettek összekötve
-            //vec2 p1, p2;
-            int p1, p2;
-            for (int j=0; j<csucsok.size(); j++){
-                if (atlokEsOldalak[i].p1==csucsok[j])
-                    p1=j;
-                if (atlokEsOldalak[i].p2==csucsok[j])
-                    p2=j;
+            int p1, p2; /// csúcsok sorszáma
+            for (int j=0; j<csucsok.size(); j++){ /// összes csúcsot végignézve
+                if (atlokEsOldalak[i].p1==csucsok[j]) /// ha egyezés van
+                    p1=j;   /// akkor a sorszám meg is van
+                if (atlokEsOldalak[i].p2==csucsok[j]) /// itt
+                    p2=j;   /// szintúgy
             }
-            szomszedCsucsIdx[p1].push_back(p2);
-            szomszedCsucsIdx[p2].push_back(p1);
+            szomszedCsucsIdx[p1].push_back(p2); /// majd a szomszédságot eltárolom
+            szomszedCsucsIdx[p2].push_back(p1); /// költsönüsen
         }
 
-        bool stop = false;
-        int cnt=0;
+        bool stop = false; /// ha baj van, álljon meg
+        int cnt=0;  // CSAK DEBUG, hogy hányszor fut le
         cout<<"atlokBefore: "<<atlok.size()<<endl;
-        set<Szakasz> mentettOsszesAtlo(atlok.begin(),atlok.end());
-        while(!stop && true){
-            for (int i=0; i<szomszedCsucsIdx.size(); i++){
-                if (DEBUG) cout<<"Szomszedok: ";
+        set<Szakasz> mentettOsszesAtlo(atlok.begin(),atlok.end()); /// ennyi az osszes egymást nem metsző átló
+        while(!stop){ /// amíg nics baj
+            // CSAK DEBUG
+            for (int i=0; i<szomszedCsucsIdx.size() && DEBUG; i++){
+                cout<<"Szomszedok: ";
                 for (int j=0; j<szomszedCsucsIdx[i].size(); j++){
-                    if (DEBUG) cout<<szomszedCsucsIdx[i][j]<<", ";
+                    cout<<szomszedCsucsIdx[i][j]<<", ";
                 }
-                if (DEBUG) cout<<endl;
+                cout<<endl;
             }
             cnt++;
-            stop=true;
-            for (int i=0; i<csucsok.size(); i++){
-                for (int j=i; j<csucsok.size(); j++){
-                    if (j==i)
-                        continue;
-                    bool szomszedok = false;
-                    for (int k=0; k<szomszedCsucsIdx[i].size(); k++){
-                        if (szomszedCsucsIdx[i][k]==j)
-                            szomszedok=true;
+            // EDDIG
+
+            stop=true; /// elvileg nincs baj, lesz majd?
+            for (int i=0; i<csucsok.size(); i++){ /// minden csúcsot
+                for (int j=i+1; j<csucsok.size(); j++){ /// minden azt követő csúccsal
+                    //if (j==i) /// minden *másik csúccsal
+                      //  continue;
+                    bool szomszedok = false; /// szomszédok?
+                    for (int k=0; k<szomszedCsucsIdx[i].size(); k++){ /// szomszádsági listában szerepel?
+                        if (szomszedCsucsIdx[i][k]==j) /// ha igen
+                            szomszedok=true; /// akkor igen
                     }
-                    if (!szomszedok)
-                        continue;
-                    int a = -1, b = -1;
+                    if (!szomszedok) /// ha nem szomszédok
+                        continue; /// akkor nem számít
+                    int a = -1, b = -1; /// szerepel-e kétszer is?
                     int aIdxK=-1, aIdxL=-1, bIdxK=-1, bIdxL=-1;
-                    for (int k=0; k<szomszedCsucsIdx[i].size(); k++){
-                        for (int l=0; l<szomszedCsucsIdx[j].size(); l++){
-                            if (szomszedCsucsIdx[i][k]==szomszedCsucsIdx[j][l]){
+                    for (int k=0; k<szomszedCsucsIdx[i].size(); k++){ /// minden szomszédján végigmegyünk
+                        for (int l=0; l<szomszedCsucsIdx[j].size(); l++){ /// mind a két csúcsnak a szomszédjain
+                            if (szomszedCsucsIdx[i][k]==szomszedCsucsIdx[j][l]){ /// ha közös szomszédjuk van
                                 if (DEBUG) cout<<"kozos szomszed: "<<i<<" "<<j<<" -> "<<szomszedCsucsIdx[i][k]<<endl;
-                                int cntSz = 0;
-                                Haromszog hrs(csucsok[i],csucsok[j],csucsok[szomszedCsucsIdx[i][k]]);
-                                for (int z = 0; z<csucsok.size(); z++){
-                                    if (hrs.benneVanAPont(csucsok[z]))
-                                        cntSz++;
-                                    if (cntSz>3)
-                                        break;
+                                /// először fontos, hogy ne kebelezzen be másik csúcsot
+                                int cntSz = 0; /// 3-ig szabad csak elszámolni
+                                Haromszog hrs(csucsok[i],csucsok[j],csucsok[szomszedCsucsIdx[i][k]]); /// ellenőrző háromszög
+                                for (int z = 0; z<csucsok.size(); z++){ /// minden csúcson végigmegy
+                                    if (hrs.benneVanAPont(csucsok[z])) /// ha benne van
+                                        cntSz++; /// az számít
+                                    if (cntSz>3) /// ha több lett, mint 3
+                                        break; /// akkor megvagyunk
                                 }
-                                if (cntSz>3)
-                                    continue;
-                                if (a==-1){
-                                    a=szomszedCsucsIdx[i][k];
-                                    aIdxK = k;
-                                    aIdxL = l;
+                                if (cntSz>3) /// ha van más csúcs is, mint a háromszög 3 csúcsa
+                                    continue; /// akkor az nem jó
+                                if (a==-1){ /// ha még nincs közös csúcsuk
+                                    a=szomszedCsucsIdx[i][k]; /// akkor eltároljuk az index-ét
+                                    aIdxK = k; /// és szomszédsági indexét is
+                                    aIdxL = l; /// mind a két csúcsnál
                                 }
-                                else if (b==-1){
-                                    b=szomszedCsucsIdx[i][k];
-                                    bIdxK = k;
-                                    bIdxL = l;
+                                else if (b==-1){ /// ha már egy közös szomszédjuk volt, akkor ez amásodik lesz
+                                    b=szomszedCsucsIdx[i][k]; /// eltároljuk, hogy van második közös szomszédjuk is
+                                    bIdxK = k; // NEM HASZNÁLT
+                                    bIdxL = l; // NEM HASZNÁLT
                                 }
-                                else
+                                else // DEBUG, NE FORDULJON ELŐ, mert egy szakazhoz csak 2 háromszög tartozhat
                                     cout<<"ERROR"<<endl;
                             }
                         }
                     }
-                    if (a*b<0){
-                        bool oldal=false;
-                        for (int z=0; z<oldalak.size(); z++){
+                    if (a*b<0){ /// csles feltétel, ha CSAK 1 közös szomszédjuk van
+                        bool oldal=false; /// a síkidom oldala?
+                        for (int z=0; z<oldalak.size(); z++){ /// nézzük meg az összeset
                             if ((oldalak[z].p1==csucsok[i] && oldalak[z].p2==csucsok[j]) || (oldalak[z].p2==csucsok[i] && oldalak[z].p1==csucsok[j])){
-                                oldal=true;
+                                oldal=true; /// ha a csúcsaik megfeleltethetőek, akkor oldal
                                 break;
                             }
-
                         }
                         if (oldal && DEBUG)
                             cout<<"oldal: "<<i<<" "<<j<<endl;
-                        if (!oldal){
+                        if (!oldal){ /// ha ez nem oldal
                             if (DEBUG) cout<<"NEM oldal: "<<i<<" "<<j<<endl;
-                            stop=false;
-                            for (int k=0; k<szomszedCsucsIdx[a].size();k++){
+                            stop=false; /// akkor ez nem szimpatikus, és próbálom helyre állítani a rendet
+                            // NEM HASZNÁLT
+                            for (int k=0; k<szomszedCsucsIdx[a].size() && DEBUG;k++){ /// szomszédságokat végignézem
                                 if (szomszedCsucsIdx[a][k]==i || szomszedCsucsIdx[a][k]==j){
                                     //szomszedCsucsIdx[a].erase(szomszedCsucsIdx[a].begin()+k);
                                     //k--;
                                 }
                             }
-                            int cnt2 = 0;
-                            for (int k=0; k<atlok.size(); k++){
+                            int cnt2 = 0; // DEBUG
+                            for (int k=0; k<atlok.size(); k++){ /// végignézem az átlókat
                                 if ((atlok[k].p1==csucsok[i] && atlok[k].p2==csucsok[j]) || (atlok[k].p2==csucsok[i] && atlok[k].p1==csucsok[j])){
-                                    atlok.erase(atlok.begin()+k);
-                                    k--;
-                                    cnt2++;
+                                    atlok.erase(atlok.begin()+k); /// ha stimmel az oldal, akkor törlésre kerül sor
+                                    k--; /// szükséges ilyenkor visszalépni
+                                    cnt2++; // DEBUG
                                     //break;
                                 }
                             }
                             if (DEBUG) cout<<"CNT2: "<<cnt2<<endl;
                             if (DEBUG) cout<<"torol: "<<i<<" "<<j<<endl;
+                            /// törlöm a szomszédságukat kölcsönösen
                             szomszedCsucsIdx[i].erase(std::remove(szomszedCsucsIdx[i].begin(), szomszedCsucsIdx[i].end(), j), szomszedCsucsIdx[i].end());
                             szomszedCsucsIdx[j].erase(std::remove(szomszedCsucsIdx[j].begin(), szomszedCsucsIdx[j].end(), i), szomszedCsucsIdx[j].end());
-                            //szomszedCsucsIdx[i].erase(szomszedCsucsIdx[i].begin()+aIdxK);
-                            //szomszedCsucsIdx[j].erase(szomszedCsucsIdx[j].begin()+aIdxL);
                         }
                     }
                 }
             }
         }
+        // CSAK DEBUG
         for (int i=0; i<szomszedCsucsIdx.size() && DEBUG; i++){
             cout<<"Szomszedok: ";
             for (int j=0; j<szomszedCsucsIdx[i].size(); j++){
@@ -305,12 +321,14 @@ struct Sikidom{
         }
         if (DEBUG) cout<<"CNT: "<<cnt<<endl;
         if (DEBUG) cout<<"atlok: "<<atlok.size()<<endl;
+        /// komplementere kell az eredmények, ha belülről járható be a síkidom
         if (belso){
-            for (int i=0; i<atlok.size(); i++){
+            for (int i=0; i<atlok.size(); i++){ /// kivonom az összes átlót az összesből
                 if (mentettOsszesAtlo.find(atlok[i])!=mentettOsszesAtlo.end()){
                     mentettOsszesAtlo.erase(mentettOsszesAtlo.find(atlok[i]));
                 }
             }
+            /// majd végül visszamásolom a jó megoldást egy clear után
             atlok.clear();
             atlok.assign(mentettOsszesAtlo.begin(),mentettOsszesAtlo.end());
         }
@@ -435,140 +453,124 @@ struct Palya{
     }
 
     void bakeNavMesh(){
-        vector<vector<vec2>> halmaz;
-        vector<vector<bool>> sikeresSzakaszok;
-        vector<Szakasz> szakaszok;
-        for (int i=0; i<sikidomok.size(); i++){
-            vector<vec2> temp;
-            vector<bool> tempB(sikidomok[i].szakaszok.size(),false);
-            if (sikidomok[i].nyilt)
-                temp.push_back(sikidomok[i].szakaszok[0].p1);
-            for (int j=0; j<sikidomok[i].szakaszok.size(); j++){
-                temp.push_back(sikidomok[i].szakaszok[j].p2);
-                szakaszok.push_back(sikidomok[i].szakaszok[j]);
+        /// minden síkidom oldalát felhasználva próbálok képezni egy-egy háromszöget valamelyik másik síkidom egyik csúcsával
+        vector<vector<vec2>> halmaz; /// eltárolom a síkidomok csúcsait síkidomonként
+        vector<vector<bool>> sikeresSzakaszok; /// és az, hogy összejöttek-e, mint szakaszok
+        vector<Szakasz> szakaszok;  /// eltárolom az összes oldalát a síkidomoknak
+        for (int i=0; i<sikidomok.size(); i++){ /// végigmegyek az összes síkidomon
+            vector<vec2> temp;  /// ebbe gyűjtöm az aktuális síkidom csúcsait
+            vector<bool> tempB(sikidomok[i].szakaszok.size(),false);    /// minden csúcsa hamis ???
+            if (sikidomok[i].nyilt) /// ha nyílt a síkidom (jelenleg nincs olyan, és nem is lesz)
+                temp.push_back(sikidomok[i].szakaszok[0].p1); /// akkor a kezdeti pontot is hozzáadjuk
+            for (int j=0; j<sikidomok[i].szakaszok.size(); j++){ /// különben elegendő minden szakasz végpontja
+                temp.push_back(sikidomok[i].szakaszok[j].p2); /// a végpontja a p2
+                szakaszok.push_back(sikidomok[i].szakaszok[j]); /// és a szakaszokban eltárolom ezt az oldalt is
             }
-            sikeresSzakaszok.push_back(tempB);
-            halmaz.push_back(temp);
+            sikeresSzakaszok.push_back(tempB);  /// ???
+            halmaz.push_back(temp); /// majd hozzácsapom a többi síkidomhoz
         }
-        vector<Szakasz> belsoAtlokTemp;
-        for (int i=0; i<sikidomok.size(); i++){
-            vector<Szakasz> temp = sikidomok[i].belsoAtlok();
-            belsoAtlokTemp.insert(belsoAtlokTemp.end(), temp.begin(), temp.end());
+        /// az összes síkidomon az átlók összegyűjtése okán
+        vector<Szakasz> belsoAtlokTemp; /// ebbe tárolom el az összes átlót
+        for (int i=0; i<sikidomok.size(); i++){ /// végigmegyek a síkidomokon
+            vector<Szakasz> temp = sikidomok[i].belsoAtlok();   /// lekérem az átlóikat
+            belsoAtlokTemp.insert(belsoAtlokTemp.end(), temp.begin(), temp.end()); /// majd hozzátoldom a meglévőkhöz
         }
-        cout<<"belsoAtlokTemp "<<belsoAtlokTemp.size()<<endl;
+        cout<<"belsoAtlokTemp "<<belsoAtlokTemp.size()<<endl; /// DEBUG
         cout<<"szakaszok.size()"<<szakaszok.size()<<endl;
         cout<<halmaz.size()<<endl;
-        int pontCnt = 0;
-        for (int i=0; i<halmaz.size(); i++)
-            pontCnt+=halmaz[i].size();
-        cout<<pontCnt<<endl;
-        for (int j=0; j<halmaz.size(); j++){
+
+        for (int j=0; j<halmaz.size(); j++){ /// végigmegyek az összes síkidomon
             if (DEBUG) cout<<"j: "<<j<<endl;
-            for (int i=0; i<halmaz[j].size(); i++){
+            for (int i=0; i<halmaz[j].size(); i++){ /// és azoknak minden csúcsain
                 if (DEBUG) cout<<"i: "<<i<<endl;
-                vec2 p1 = halmaz[j][i];
-                int tidx = i+1;
-                if (i+1>=halmaz[j].size())
-                    tidx=0;
-                vec2 p2 = halmaz[j][tidx];
-                for (int k=0; k<halmaz.size(); k++){
-                    ///cout<<"k: "<<k<<endl;
+                vec2 p1 = halmaz[j][i]; /// és veszem az indexel csúcsot
+                int tidx = (i+1)%halmaz[j].size(); /// és az azt követőt, vagy az elsőt, ha az utolsóhoz értünk
+                //if (i+1>=halmaz[j].size())
+                    //tidx=0;
+                vec2 p2 = halmaz[j][tidx]; /// el is tárolom
+                for (int k=0; k<halmaz.size(); k++){ /// újra végigmegyek a síkidomokon
                     if (k==j) /// nicns saját magával történõ háromszögezés
                         continue;
-                    for (int l=0; l<halmaz[k].size(); l++){
-                        bool siker = true;
-                        ///cout<<"l: "<<l<<endl;
-                        vec2 p3 = halmaz[k][l];
-                        Szakasz sz1(p1,p3);
-                        Szakasz sz2(p2,p3);
-                        /// EZ NEM SZUKSEGES
-                        for (int z=0; z<belsoAtlokTemp.size(); z++){
-                            if (metszikVagyAtlapolodnak(sz1,belsoAtlokTemp[z])){
-                                if (DEBUG) cout<<"SIKER, JIPPI1"<<endl;
-                                siker=false;
+                    for (int l=0; l<halmaz[k].size(); l++){ /// végigmegyek a csúcsain megint
+                        bool siker = true;  /// ha minden rendben megy
+                        vec2 p3 = halmaz[k][l]; /// a lehetséges 3. csúcs a háromszöghöz
+                        Szakasz sz1(p1,p3); /// van az eredeti szakaszunk, ami az oldal, és van két új szakaszunk
+                        Szakasz sz2(p2,p3); /// ezeket fogom metszés szempontjából megvizsgálni
+                        /// EZ NEM SZUKSEGES, de kellhet, mert gyorsabb mint a másik, viszont pontatlanabb
+                        /// *pontatlan - nem ad hibás eredményt, csak kevesebb jót maximum
+                        /// 51 ms helyett 14 ms lesz a generálás egyes esetekben (szükséges az "&& siker")
+                        for (int z=0; z<belsoAtlokTemp.size() && siker; z++){ /// végigmegyek az összes átlón
+                            if (metszikVagyAtlapolodnak(sz1,belsoAtlokTemp[z])){ /// ha metszést produkálnak
+                                if (DEBUG) cout<<"SIKER, JIPPI1"<<endl; /// akkor baj van
+                                siker=false;    /// és nem lesz jó háromszögenk
                                 break;
                             }
-                            if (metszikVagyAtlapolodnak(sz2,belsoAtlokTemp[z])){
-                                if (DEBUG) cout<<"SIKER, JIPPI2"<<endl;
-                                siker=false;
+                            if (metszikVagyAtlapolodnak(sz2,belsoAtlokTemp[z])){ /// ha metszést produkál a másik szakasz
+                                if (DEBUG) cout<<"SIKER, JIPPI2"<<endl;/// akkor is baj van
+                                siker=false; /// és szintén nem lesz jó háromszögenk
                                 break;
                             }
                         }
-                        ///cout<<"alma"<<endl;
-                        for (int z=0; z<szakaszok.size(); z++){
-                            ///cout<<"z: "<<z<<endl;
-                            double res = 0, s = 0, t = 0;
-                            //vec2 p0(sz1.p1.x,sz1.p2.y), p1(2.0f, 1.0f), q0(0.0f, 1.0f), q1(2.0f, 1.0f);
-                            vec2 closest2[2];
-                            bool Dret = false;
+                        /// ha még nicns elenvetés
+                        for (int z=0; z<szakaszok.size() && siker; z++){ /// akkor végigmegyek az összes tiltott szakszon, oldalakon és átlókon is
+                            double res = 0, s = 0, t = 0;   /// metszéshez szükséges paraméterek a visszatéréshez ( van már rá függvény) !!!
+                            vec2 closest2[2];   /// szintúgy
+                            bool Dret = false; /// szintúgy
 
-                            DistanceSegments2(sz1.p1,sz1.p2,szakaszok[z].p1,szakaszok[z].p2,res,s,t,closest2,Dret);
-                            if (res<EPSZ && ((t>EPSZ && t<1.0f-EPSZ) || (s>EPSZ && s<1.0f-EPSZ) )){
+                            DistanceSegments2(sz1.p1,sz1.p2,szakaszok[z].p1,szakaszok[z].p2,res,s,t,closest2,Dret); /// mag a metszés keresése
+                            if (res<EPSZ && ((t>EPSZ && t<1.0f-EPSZ) || (s>EPSZ && s<1.0f-EPSZ) )){ /// ha viszonylag metszéspontnak mondható
                                 if (DEBUG) cout<<"BAJOS1"<<endl;
                                 if (DEBUG) cout<<res<<", s: "<<s<<", t:"<<t<<", "<<closest2[0].x<<" "<<closest2[1].y<<", "<<closest2[1].x<<" "<<closest2[1].y<<endl;
                                 if (DEBUG) cout<<"i: "<<i<<", j: "<<j<<endl;
                                 if (DEBUG) cout<<p1.x<<" "<<p1.y<<", "<<p3.x<<" "<<p3.y<<endl;
                                 if (DEBUG) cout<<szakaszok[z].p1.x<<" "<<szakaszok[z].p1.y<<", "<<szakaszok[z].p2.x<<" "<<szakaszok[z].p2.y<<endl;
-                                siker=false;
+                                siker=false;    /// akkor nem jó
                                 continue;
                             }
                             //if ()
-                            DistanceSegments2(sz2.p1,sz2.p2,szakaszok[z].p1,szakaszok[z].p2,res,s,t,closest2,Dret);
-                            if (res<EPSZ && ((t>EPSZ && t<1.0f-EPSZ) || (s>EPSZ && s<1.0f-EPSZ) )){
+                            DistanceSegments2(sz2.p1,sz2.p2,szakaszok[z].p1,szakaszok[z].p2,res,s,t,closest2,Dret); /// mag a metszés keresése a másik szakaszon
+                            if (res<EPSZ && ((t>EPSZ && t<1.0f-EPSZ) || (s>EPSZ && s<1.0f-EPSZ) )){ /// ha viszonylag metszéspontnak mondható
                                 if (DEBUG) cout<<"BAJOS2"<<endl;
                                 if (DEBUG) cout<<res<<", s: "<<s<<", t:"<<t<<", "<<closest2[0].x<<" "<<closest2[1].y<<", "<<closest2[1].x<<" "<<closest2[1].y<<endl;
                                 if (DEBUG) cout<<"i: "<<i<<", j: "<<j<<endl;
                                 if (DEBUG) cout<<p2.x<<" "<<p2.y<<", "<<p3.x<<" "<<p3.y<<endl;
                                 if (DEBUG) cout<<szakaszok[z].p1.x<<" "<<szakaszok[z].p1.y<<", "<<szakaszok[z].p2.x<<" "<<szakaszok[z].p2.y<<endl;
-                                siker=false;
+                                siker=false; /// akkor nem jó
                                 continue;
                             }
-                            ///cout<<"korte"<<endl;
-                            Haromszog haromszog(p1,p2,p3);
-                            ///cout<<"korte2"<<endl;
-                            bool ures = true;
-                            for (int zz=0; zz<halmaz.size(); zz++){
-                                ///if (DEBUG) cout<<"zz: "<<zz<<endl;
-                                for (int zzz=0; zzz<halmaz[zz].size(); zzz++){
-                                    ///if (DEBUG) cout<<"zzz: "<<zzz<<endl;
-                                    if ((zz==j && (i==zzz || tidx==zzz)) || (zz==k && zzz==l))
+                            Haromszog haromszog(p1,p2,p3); /// létrehozok egy háromszöget külön, spécibb mint egy síkidom
+                            bool ures = true;   /// ha háromszög egy csúcsot sem tartalmaz (olyat tilos)
+                            for (int zz=0; zz<halmaz.size() && ures && siker; zz++){ /// végigmegyek az összes síkidom
+                                for (int zzz=0; zzz<halmaz[zz].size() && ures; zzz++){ /// összes csúcsán
+                                    if ((zz==j && (i==zzz || tidx==zzz)) || (zz==k && zzz==l)) /// ha valamelyikkel egyezik, az nem számít
                                         continue;
-
-                                    ///if (DEBUG) cout<<"banan"<<endl;
-                                    if (haromszog.benneVanAPont(halmaz[zz][zzz])){
-                                        zz=halmaz.size()-1;
-                                        zzz=halmaz[zz].size()-1;
-                                        ures = false;
+                                    if (haromszog.benneVanAPont(halmaz[zz][zzz])){ /// ellenkező esetben nézze meg, hogy részét képzi-e
+                                        ures = false;   /// akkor nem üres
                                     }
-                                    ///cout<<"banan2"<<endl;
                                 }
-                                ///cout<<"banan3"<<endl;
                             }
-                            ///cout<<"banan4"<<endl;
-                            if (!ures){
-                                if (DEBUG) cout<<"URES"<<endl;
-                                siker=false;
+                            if (!ures){ /// ha nem üres
+                                if (DEBUG) cout<<"NEM URES"<<endl;
+                                siker=false; /// az baj
                                 continue;
                             }
-                            if (DEBUG) cout<<"kazmer"<<endl;
                             //siker=true;
                             //l=INT_MAX;
                             //k=halmaz.size()-1;
                             //z=INT_MAX;
                             //cout<<res<<", s: "<<s<<", t:"<<t<<", "<<closest2[0].x<<" "<<closest2[1].y<<", "<<closest2[1].x<<" "<<closest2[1].y<<endl;
                         }
-                        if (siker){
+                        if (siker){ /// ha kiállta a próbákat
                             if (DEBUG) cout<<"SIKER"<<endl;
-                            Sikidom tempS;
-                            tempS.szakaszok.push_back(Szakasz(p1,p2));
+                            Sikidom tempS; /// akkor létrehozok egy új síkidomot (ami tikon háromszög lehet csak)
+                            tempS.szakaszok.push_back(Szakasz(p1,p2));  /// hozzáadom a szakaszokat körbejárásnak megfelelően
                             tempS.szakaszok.push_back(Szakasz(p2,p3));
                             tempS.szakaszok.push_back(Szakasz(p3,p1));
-                            if (DEBUG) cout<<"JEEJ"<<endl;
-                            szakaszok.push_back(tempS.szakaszok[1]);
-                            szakaszok.push_back(tempS.szakaszok[2]);
+                            szakaszok.push_back(tempS.szakaszok[1]);    /// majd az eddig meglévő oldalakhoz hozzáadom az egyik szakaszt
+                            szakaszok.push_back(tempS.szakaszok[2]);    /// és a másikat is
                             if (DEBUG) cout<<szakaszok.size()<<endl;
-                            navMesh.push_back(tempS);
-                            sikeresSzakaszok[j][i]=true;
+                            navMesh.push_back(tempS);   /// majd eltárolom (ezek csak háromszögek lehetnek)
+                            sikeresSzakaszok[j][i]=true; /// és ez egy sikeres szakasz (azaz sikerült a síkidom oldalához találni háromszöget)
                         }
                     }
                 }
@@ -576,24 +578,26 @@ struct Palya{
         }
 
         cout<<"EDDIG JO"<<endl;
-        for (int j=0; j<halmaz.size(); j++){
-            for (int i=0; i<halmaz[j].size(); i++){
-                if (sikeresSzakaszok[j][i])
-                    continue;
-                vec2 p1 = halmaz[j][i];
-                int tidx = i+1;
-                if (i+1>=halmaz[j].size())
-                    tidx=0;
-                vec2 p2 = halmaz[j][tidx];
-                for (int k=0; k<halmaz[j].size(); k++){
-                    if (k==i || k==tidx)
-                        continue;
-                    bool siker = true;
-                    ///cout<<"l: "<<l<<endl;
-                    vec2 p3 = halmaz[j][k];
-                    Szakasz sz1(p1,p3);
-                    Szakasz sz2(p2,p3);
-                    for (int z=0; z<belsoAtlokTemp.size(); z++){
+        /// rengeteg lehetséges háromszög maradhatott hátra, például ha egy sokszög önmagával kelljen képeznie háromszöget
+        for (int j=0; j<halmaz.size(); j++){ /// végigmegyek a síkidomokon
+            for (int i=0; i<halmaz[j].size(); i++){ /// azok csúcsain
+                if (sikeresSzakaszok[j][i]) /// ha már a szakaszt megoldottam
+                    continue; /// akkor jöhet a következő
+                vec2 p1 = halmaz[j][i]; /// ez egy új csúcs
+                int tidx = (i+1)%halmaz[j].size(); /// ez meg a következő a síkidomban
+                //if (i+1>=halmaz[j].size())
+                //    tidx=0;
+                vec2 p2 = halmaz[j][tidx]; /// el is tárolom
+                for (int k=0; k<halmaz[j].size(); k++){ /// végig megyek az összes csúcsán a síkidomnak
+                    if (k==i || k==tidx) /// ha az előzőek valamelyike
+                        continue; /// az nem jó
+                    bool siker = true; /// nézzük meg, hogy elbukik-e valamin
+                    vec2 p3 = halmaz[j][k]; /// ehhez kell ez a harmadik csúcs is
+                    Szakasz sz1(p1,p3); /// és az általa képzett két szakasz
+                    Szakasz sz2(p2,p3); /// két szakasz
+                    /// megnézem a belső átlóit és az öszes eddigi szakaszt (utóbbiakkal lehet párhuzamos, és ugyan az is (szomszédosak a háromszögek))
+                    /// "kódduplikéció"
+                    for (int z=0; z<belsoAtlokTemp.size() && siker; z++){
                         if (metszikVagyAtlapolodnak(sz1,belsoAtlokTemp[z])){
                             if (DEBUG) cout<<"SIKER, JIPPI1"<<endl;
                             siker=false;
@@ -606,8 +610,7 @@ struct Palya{
                         }
                     }
 
-                    for (int z=0; z<szakaszok.size(); z++){
-                        ///cout<<"z: "<<z<<endl;
+                    for (int z=0; z<szakaszok.size() && siker; z++){
                         double res = 0, s = 0, t = 0;
                         //vec2 p0(sz1.p1.x,sz1.p2.y), p1(2.0f, 1.0f), q0(0.0f, 1.0f), q1(2.0f, 1.0f);
                         vec2 closest2[2];
@@ -633,28 +636,21 @@ struct Palya{
                             siker=false;
                             continue;
                         }
-                        ///cout<<"korte"<<endl;
                         Haromszog haromszog(p1,p2,p3);
-                        ///cout<<"korte2"<<endl;
                         bool ures = true;
-                        for (int zz=0; zz<halmaz.size(); zz++){
+                        for (int zz=0; zz<halmaz.size() && ures; zz++){
                             if (DEBUG) cout<<"zz: "<<zz<<endl;
-                            for (int zzz=0; zzz<halmaz[zz].size(); zzz++){
+                            for (int zzz=0; zzz<halmaz[zz].size() && ures; zzz++){
                                 if (DEBUG) cout<<"zzz: "<<zzz<<endl;
                                 if ((zz==j && (i==zzz || tidx==zzz)) || (zz==j && zzz==k))
                                     continue;
 
                                 if (DEBUG) cout<<"banan"<<endl;
                                 if (haromszog.benneVanAPont(halmaz[zz][zzz])){
-                                    zz=halmaz.size()-1;
-                                    zzz=halmaz[zz].size()-1;
                                     ures = false;
                                 }
-                                ///cout<<"banan2"<<endl;
                             }
-                            ///cout<<"banan3"<<endl;
                         }
-                        ///cout<<"banan4"<<endl;
                         if (!ures){
                             if (DEBUG) cout<<"URES"<<endl;
                             siker=false;
@@ -668,6 +664,8 @@ struct Palya{
                         //z=INT_MAX;
                         //cout<<res<<", s: "<<s<<", t:"<<t<<", "<<closest2[0].x<<" "<<closest2[1].y<<", "<<closest2[1].x<<" "<<closest2[1].y<<endl;
                     }
+
+                    /// eddig, és a következő is kicsit
                     if (siker){
                         for (int kk=0; k<navMesh.size(); k++){
                             /// LEHET KI KÉNE SZŰRNI AZ EGYBEVÁGÓ HÁROMSZÖGEKET
@@ -678,7 +676,8 @@ struct Palya{
                         tempS.szakaszok.push_back(Szakasz(p2,p3));
                         tempS.szakaszok.push_back(Szakasz(p3,p1));
                         if (DEBUG) cout<<"JEEJ"<<endl;
-                        belsoAtlokTemp.push_back(tempS.szakaszok[0]);
+                        belsoAtlokTemp.push_back(tempS.szakaszok[0]);   /// fontos különbség, mert az oldal így most már el lesz könyvelve
+                        /// hogyha nem lenne, akkor a síkidom felhasznált két oldalából kétszer is leképeznénk ugyan azt a háromszöget
                         szakaszok.push_back(tempS.szakaszok[1]);
                         szakaszok.push_back(tempS.szakaszok[2]);
                         if (DEBUG) cout<<szakaszok.size()<<endl;
@@ -688,15 +687,22 @@ struct Palya{
                 }
             }
         }
-
+        /// minden oldal elvileg fel van használva, ekkor még sok hely kimarad, ez a síkidomok számától függ
+        /// BTW oldalak szám - 2 + 2 * síkidomok száma.
+        /// Egy négyzetnek csak két háromszöge van az egyik átlója mentén
+        /// mert matek
         cout<<"SZAKASZOK"<<endl;
-        for (int i=0; i<szakaszok.size(); i++){
-            for (int j=0; j<szakaszok.size(); j++){
-                if (j==i)
+        /// itt még azok a háromszögek nincsenek meg, amik nem a síkidomok oldalival dolgoznak
+        // CSAK DEBUG !!!
+        for (int i=0; i<szakaszok.size() && DEBUG; i++){ /// megnézem az összes szakaszt
+            for (int j=0; j<szakaszok.size(); j++){ /// összehasonlítom mindegyikkel
+                if (j==i)   /// önmagával nem
                     continue;
+                /// metszéshez szükséges visszatérési értékek (függvény !!!)
                 double res = 0, s = 0, t = 0;
                 vec2 closest2[2];
                 bool Dret = false;
+                ///eddig, itt meg a metszés keresése
                 DistanceSegments2(szakaszok[i].p1,szakaszok[i].p2,szakaszok[j].p1,szakaszok[j].p2,res,s,t,closest2,Dret);
                 if ((res<EPSZ && ((t>EPSZ && t<1.0f-EPSZ) || (s>EPSZ && s<1.0f-EPSZ) ))){
                     cout<<i<<" "<<j<<endl;
@@ -713,18 +719,22 @@ struct Palya{
                 cout<<"ITT VAGYOK 2"<<endl;
             }
         }
-        double res = 0, s = 0, t = 0;
-        vec2 closest2[2];
-        bool Dret = false;
-        DistanceSegments2(vec2(225,225),vec2(400,0),vec2(200,200),vec2(300,225),res,s,t,closest2,Dret);
-        if (DEBUG) cout<<"BAJOS2"<<endl;
-        if (DEBUG) cout<<res<<", s: "<<s<<", t:"<<t<<", "<<closest2[0].x<<" "<<closest2[1].y<<", "<<closest2[1].x<<" "<<closest2[1].y<<endl;
+        // EDDIG DEBUG !!!
+        /*
+        if (DEBUG){
+            double res = 0, s = 0, t = 0;
+            vec2 closest2[2];
+            bool Dret = false;
+            DistanceSegments2(vec2(225,225),vec2(400,0),vec2(200,200),vec2(300,225),res,s,t,closest2,Dret);
+            cout<<"BAJOS2"<<endl;
+            cout<<res<<", s: "<<s<<", t:"<<t<<", "<<closest2[0].x<<" "<<closest2[1].y<<", "<<closest2[1].x<<" "<<closest2[1].y<<endl;
+        }*/
+
         if (DEBUG) cout<<"navMesh.size() "<<navMesh.size()<<endl;
 
-
-        clock_t t2 = clock();
-        fillNavMesh();
-        cout<<"fillNavMesh() time: "<<clock()-t2<<endl;
+        clock_t t2 = clock();   /// IDŐMÉRŐ
+        fillNavMesh(); /// minden maradék helyet ki kell tölteni
+        cout<<"fillNavMesh() time: "<<clock()-t2<<endl; /// időtartama
 
     }
 
@@ -1372,12 +1382,13 @@ struct Palya{
 };
 
 
-
+/// megjelenítéshez szükséges globális változók
 vec2 camera(-40,-40);
 bool W=false,A=false,S=false,D=false;
+/// és mindenek atyja
 Palya palya;
 
-
+/// eseméyneket, bemeneteket itt kezelem le
 void EventHandle(SDL_Event ev){
 
     if (ev.type==SDL_KEYUP){
@@ -1434,6 +1445,7 @@ void EventHandle(SDL_Event ev){
         exit(3);
 }
 
+/// kamerát mozgatja
 void moveCamera(clock_t dt){
     if (W){
         camera.y+=dt*1.0f;
@@ -1449,6 +1461,7 @@ void moveCamera(clock_t dt){
     }
 }
 
+/// MAIN
 void simulation(SDL_Window &window, SDL_Renderer &renderer){
     clock_t t1 = clock();
     int targetFPS = 60;
@@ -1462,11 +1475,11 @@ void simulation(SDL_Window &window, SDL_Renderer &renderer){
     clock_t dt = 0;
 
 
-
+    /// megjelenítési és eseménykezelő ciklus
     while(!stop){
 
-
-        if (clock()>t1+CLOCKS_PER_SEC/targetFPS){
+        /// beállított képkockafrissítési gyakoriságot próbálja tartani
+        if (clock()>=t1+CLOCKS_PER_SEC/targetFPS){
             dt = t1 - clock();
             t1=clock();
             frame = true;
@@ -1475,25 +1488,26 @@ void simulation(SDL_Window &window, SDL_Renderer &renderer){
             Sleep(1);
         }
 
-
+        // DEBUG
         if (clock()>=last_sec+1000){
             last_sec=clock();
             //cout<<framesInLastSec<<endl;
             framesInLastSec = 0;
         }
 
+        /// események lekérdezése, és feldolgozása
         if (SDL_PollEvent(&ev)){
             EventHandle(ev);
         }
 
+        /// egy képkocka
         if (frame){
             framesInLastSec++;
-            SDL_SetRenderDrawColor( &renderer, 0, 0, 0, 255 );
-            SDL_RenderClear(&renderer);
-            moveCamera(dt);
-            //SDL_RenderPresent(&renderer);
-            palya.draw(renderer,camera);
-            SDL_RenderPresent(&renderer);
+            SDL_SetRenderDrawColor( &renderer, 0, 0, 0, 255 ); /// tisztító szín
+            SDL_RenderClear(&renderer); /// tiszta
+            moveCamera(dt); /// mozgatja a kamerát
+            palya.draw(renderer,camera); /// kirajzolja a pályát
+            SDL_RenderPresent(&renderer); /// meg is jeleníti
             //megjelenites(renderer,window,palya,step_cnt);
         }
     }
