@@ -38,7 +38,11 @@
 			<Add option="-static" />
 		</Linker>
 		<Unit filename="SimulationMain.cpp" />
+		<Unit filename="camera.cpp" />
+		<Unit filename="camera.h" />
 		<Unit filename="common.h" />
+		<Unit filename="geo.cpp" />
+		<Unit filename="geo.h" />
 		<Unit filename="main.cpp" />
 		<Unit filename="vec3.cpp" />
 		<Unit filename="vec3.h" />

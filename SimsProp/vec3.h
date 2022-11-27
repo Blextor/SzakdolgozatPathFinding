@@ -43,6 +43,8 @@
 #include <cmath>
 #include <iostream>
 
+#pragma once
+
 /*! \defgroup vec3group 3D vectors */
 /*! \{ */
 
@@ -229,7 +231,8 @@ public:
 	}
 
 	void rotate(double deg) {
-		double theta = deg / 180.0 * M_PI;
+	    double M_PI2 = 3.14159265358979323846264338327950288;
+		double theta = deg / 180.0 * M_PI2;
 		double c = cos(theta);
 		double s = sin(theta);
 		double tx = x * c - y * s;

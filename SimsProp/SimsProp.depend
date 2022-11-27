@@ -91,15 +91,31 @@
 	<windows.h>
 	<stdlib.h>
 
-1669504711 c:\users\bobo\documents\github\szakdolgozatpathfinding\simsprop\vec3.h
+1669542913 c:\users\bobo\documents\github\szakdolgozatpathfinding\simsprop\vec3.h
 	<cmath>
 	<iostream>
 
-1669519184 source:c:\users\bobo\documents\github\szakdolgozatpathfinding\simsprop\simulationmain.cpp
+1669566463 source:c:\users\bobo\documents\github\szakdolgozatpathfinding\simsprop\simulationmain.cpp
 	"common.h"
 	"vec3.h"
+	"geo.h"
+	"camera.h"
 
 1669504956 source:c:\users\bobo\documents\github\szakdolgozatpathfinding\simsprop\vec3.cpp
 	"common.h"
 	"vec3.h"
+
+1669542838 source:c:\users\bobo\documents\github\szakdolgozatpathfinding\simsprop\geo.cpp
+
+1669566463 c:\users\bobo\documents\github\szakdolgozatpathfinding\simsprop\geo.h
+	"common.h"
+	"vec3.h"
+	"camera.h"
+
+1669543408 source:c:\users\bobo\documents\github\szakdolgozatpathfinding\simsprop\camera.cpp
+	"camera.h"
+
+1669543694 c:\users\bobo\documents\github\szakdolgozatpathfinding\simsprop\camera.h
+	"vec3.h"
+	"common.h"
 
