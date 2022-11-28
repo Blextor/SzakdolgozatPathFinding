@@ -37,6 +37,29 @@ struct Szakasz{
         return Szakasz(p2,p1);
     }
 
+    vec2 legyenLegalabbXTavra(vec2 p, float X){
+        /// saját matek
+        float x = vec2Tav(p); /// p távolsága a szakaszra illeszkedő egyenestől
+        if (x>=X) /// ha legalább X
+            return p; /// akkor nincs dolgunk
+        float e = sqrt(pow(p2.dist(p),2)-pow(x,2)); /// p2 és a p-hez a legközelebbi pont távolsága
+        vec2 p21 = p1-p2; /// kell egy vektor a p2-ből a legközelebbi ponthoz
+        p21 = p21.normalize(); /// normalizáltan lehet venni az E-szeresét
+        vec2 p21T = p21; p21T.rotate(-90); /// és onnan kell egy merőleges
+        //p21T = p21T.normalize();
+        return p2+p21*e+p21T*X; /// az meg X-szeresen
+    }
+
+    float vec2Tav(vec2 p){ /// szakasztól, mint egyenestől a pont távolsága
+        /// saját matek
+        float a = p1.dist(p); /// p1 és a pont távolsága
+        float b = p2.dist(p); /// p2 és a p távolsága
+        float c = p1.dist(p2); /// a szakasz hossza
+        float x = pow((b*b+c*c-a*a)/(2*c),2) - b*b; /// Pithagoras-tétel felhasználásával
+        x*=-1.f;
+        return sqrt(x); /// a pont távolsága
+    }
+
     /// meg lehet jeleníteni
     void draw(SDL_Renderer &renderer, Kamera kamera, int r = 255, int g = 255, int b = 23){
             lineRGBA(&renderer,
@@ -82,6 +105,15 @@ bool metszikEgymast(Szakasz sz1, Szakasz sz2){
     bool Dret = false;
     DistanceSegments2(sz1.p1,sz1.p2,sz2.p1,sz2.p2,res,s,t,closest2,Dret);
     return (!Dret && res<EPSZ && ((t>EPSZ && t<1.0f-EPSZ) || (s>EPSZ && s<1.0f-EPSZ) ));
+}
+
+/// függvény a metszésre, mert kell neki paraméter és sok helyet lehet ezzel spórolni
+vec2 metszikEgymastHol(Szakasz sz1, Szakasz sz2){
+    double res = 0, s = 0, t = 0;
+    vec2 closest2[2];
+    bool Dret = false;
+    DistanceSegments2(sz1.p1,sz1.p2,sz2.p1,sz2.p2,res,s,t,closest2,Dret);
+    return closest2[0];
 }
 
 /// precízebb, de mégsem

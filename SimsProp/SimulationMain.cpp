@@ -30,11 +30,12 @@ struct Vilag{
     Sikidom alaprajzToTartozo(int idx){
         Sikidom jelenAlap = alaprajz[idx];
         vector<vec2> tartozoCsucsok;
+        cout<<"KEZD"<<endl;
         for (int i=0; i<jelenAlap.szakaszok.size(); i++){
             vec2 AB = jelenAlap.szakaszok[i].p2 - jelenAlap.szakaszok[i].p1;
             int j = (i+1)%jelenAlap.szakaszok.size();
             vec2 BC = jelenAlap.szakaszok[j].p2 - jelenAlap.szakaszok[j].p1;
-
+            cout<<"A"<<endl;
             AB = AB.normalize();
             BC = BC.normalize();
             vec2 AC = AB + BC;
@@ -44,37 +45,72 @@ struct Vilag{
             ACT.rotate(90);
             Szakasz sz1(jelenAlap.szakaszok[i].p1+ABT*agentRadius,jelenAlap.szakaszok[i].p1+ABT*agentRadius + AB * 2000.f);
             Szakasz sz2(jelenAlap.szakaszok[i].p2,jelenAlap.szakaszok[i].p2+ ACT * 2000.f);
+            cout<<"B"<<endl;
+            //cout<<sz1.p1.x<<" "<<sz1.p1.y<<", "<<sz1.p2.x<<" "<<sz1.p2.y<<endl;
+            //cout<<sz2.p1.x<<" "<<sz2.p1.y<<", "<<sz2.p2.x<<" "<<sz2.p2.y<<endl;
 
-            cout<<sz1.p1.x<<" "<<sz1.p1.y<<", "<<sz1.p2.x<<" "<<sz1.p2.y<<endl;
-            cout<<sz2.p1.x<<" "<<sz2.p1.y<<", "<<sz2.p2.x<<" "<<sz2.p2.y<<endl;
-
+            if (tartozoCsucsok.size()!=0){
+                //tartozoCsucsok[tartozoCsucsok.size()-1]=jelenAlap.szakaszok[j].legyenLegalabbXTavra(tartozoCsucsok[tartozoCsucsok.size()-1],agentRadius);
+            }
+            cout<<"C"<<endl;
             double res = 0, s = 0, t = 0;
             vec2 closest2[2];
             bool Dret = false;
             DistanceSegments2(sz1.p1,sz1.p2,sz2.p1,sz2.p2,res,s,t,closest2,Dret);
+            cout<<"C2"<<endl;
             if ((closest2[0]-sz1.p1).length()>(jelenAlap.szakaszok[i].p2+ABT*agentRadius-sz1.p1).length()){
-                tartozoCsucsok.push_back(jelenAlap.szakaszok[i].p2+ABT*agentRadius);
-                tartozoCsucsok.push_back(jelenAlap.szakaszok[i].p2+ACT*agentRadius);
+                vec2 temp = jelenAlap.szakaszok[i].p2+ABT*agentRadius;
+                vec2 b = jelenAlap.szakaszok[i].p2+ACT*agentRadius;
+                if (tartozoCsucsok.size()==0 || b.dist(temp)<b.dist(tartozoCsucsok.back()))
+                    tartozoCsucsok.push_back(jelenAlap.szakaszok[i].p2+ABT*agentRadius);
+                tartozoCsucsok.push_back(b);
                 vec2 BCT = BC;
                 BCT.rotate(90); BCT = BCT.normalize();
                 tartozoCsucsok.push_back(jelenAlap.szakaszok[i].p2+BCT*agentRadius);
             } else {
-                tartozoCsucsok.push_back(closest2[0]);
+                tartozoCsucsok.push_back(closest2[1]); /// szükséges az 1 a vágáshoz
             }
+            cout<<"D"<<endl;
             if (!Dret && res<EPSZ && ((t>EPSZ && t<1.0f-EPSZ) || (s>EPSZ && s<1.0f-EPSZ) )){
-                cout<<"OK"<<endl;
+                //cout<<"OK"<<endl;
             } else {
-                cout<<"MI A BAJ?"<<endl;
+                //cout<<"MI A BAJ?"<<endl;
             }
 
             //metszikEgymast()
         }
         jelenAlap.szakaszok.clear();
+        cout<<"ALMA"<<endl;
+        for (int i=0; i<tartozoCsucsok.size(); i++){
+            if (tartozoCsucsok[i]==tartozoCsucsok[(i+1)%tartozoCsucsok.size()])
+                tartozoCsucsok.erase(tartozoCsucsok.begin()+i--);
+        }
+        cout<<"BALMA"<<endl;
         for (int i=0; i<tartozoCsucsok.size(); i++){
             int j = (i+1)%tartozoCsucsok.size();
-            Szakasz sz(tartozoCsucsok[i],tartozoCsucsok[j]);
-            jelenAlap.szakaszok.push_back(sz);
+            int k = (i+2)%tartozoCsucsok.size();
+            int l = (i+3)%tartozoCsucsok.size();
+            Szakasz sz1(tartozoCsucsok[i],tartozoCsucsok[j]);
+            Szakasz sz2(tartozoCsucsok[k],tartozoCsucsok[l]);
+            if (metszikEgymast(sz1,sz2)){
+
+                cout<<"CALMA"<<endl;
+                vec2 hol = metszikEgymastHol(sz1,sz2);
+                if (j==tartozoCsucsok.size()-1){
+                    tartozoCsucsok.erase(tartozoCsucsok.begin()+j);
+                    tartozoCsucsok[0]=hol;
+                } else {
+                    tartozoCsucsok.erase(tartozoCsucsok.begin()+j);
+                    tartozoCsucsok[j]=hol;
+                }
+                sz1.p2=hol;
+
+                cout<<"DALMA"<<endl;
+            }
+            jelenAlap.szakaszok.push_back(sz1);
         }
+
+        cout<<"EALMA"<<endl;
         jelenAlap.belso=(idx==0);
         return jelenAlap;
     }
@@ -121,7 +157,7 @@ struct Vilag{
                          150,215,100,255);
                 filledCircleRGBA(&renderer,
                          kamera.valosLekepezese(alaprajzhozTartozo[i].szakaszok[j].p1).x,kamera.valosLekepezese(alaprajzhozTartozo[i].szakaszok[j].p1).y, 5,
-                         29,80,64,255);
+                         60,160,128,200);
             }
         }
     }
@@ -134,13 +170,24 @@ Kamera kamera;
 /// és mindenek atyja
 //Palya palya;
 Vilag vilag;
-Palya palya(false);
+Palya palya(true);
+
+bool folyamatban = false;
+float f1 = 1.f;
 
 /// eseméyneket, bemeneteket itt kezelem le
 void EventHandle(SDL_Event ev){
     kamera.handleEvent(ev);
     if (ev.type==SDL_KEYUP){
 
+        if (ev.key.keysym.sym == SDLK_y){
+            folyamatban=false;
+            f1=1;
+        }
+        if (ev.key.keysym.sym == SDLK_x){
+            folyamatban=false;
+            f1=-1;
+        }
     }
     if (ev.type==SDL_KEYDOWN){
 
@@ -168,6 +215,27 @@ void EventHandle(SDL_Event ev){
             clock_t t = clock();
             palya.bakeAtloNavMesh(true);
             cout<<"NavMesh atloi: "<<clock()-t<<endl;
+        }
+
+        if (ev.key.keysym.sym == SDLK_j){
+            vilag.agentRadius++;
+            cout<<"agentRadius: "<<vilag.agentRadius<<endl;
+        }
+        if (ev.key.keysym.sym == SDLK_k){
+            vilag.agentRadius--;
+            cout<<"agentRadius: "<<vilag.agentRadius<<endl;
+        }
+        if (ev.key.keysym.sym == SDLK_k){
+            vilag.agentRadius--;
+            cout<<"agentRadius: "<<vilag.agentRadius<<endl;
+        }
+        if (ev.key.keysym.sym == SDLK_y){
+            folyamatban=true;
+            f1=1;
+        }
+        if (ev.key.keysym.sym == SDLK_x){
+            folyamatban=true;
+            f1=-1;
         }
 
         if (ev.key.keysym.sym == SDLK_r){ /// pálya reset
@@ -289,6 +357,12 @@ void simulation(SDL_Window &window, SDL_Renderer &renderer){
             SDL_SetRenderDrawColor( &renderer, 0, 0, 0, 255 ); /// tisztító szín
             SDL_RenderClear(&renderer); /// tiszta
             kamera.moveCamera(dt); /// mozgatja a kamerát
+            if (folyamatban){
+                vilag.agentRadius+=dt/1000.f*f1;
+                if (vilag.agentRadius<0)
+                    vilag.agentRadius=0;
+                vilag.alaprajzhozTartozoLetrehozasa();
+            }
             palya.draw(renderer,kamera); /// kirajzolja a pályát
             vilag.draw(renderer,kamera);
             SDL_RenderPresent(&renderer); /// meg is jeleníti
