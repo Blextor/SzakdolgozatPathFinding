@@ -1,0 +1,43 @@
+A feladatom
+
+A feladatom az, hogy alkossak egy olyan programot, amely képes a járókelők mozgásának, azaz a gyalogos közlekedés leszimulálására.
+Kezdetben a feladatom, hogy a problémafelvetéssel és az irodalomkutatással kezdjem. A kettőt szükséges együtt végezni, ugyanis a már meglévő, mások által írt munkákban a problémakör nehézségére gyakran kitérnek.
+Ennek okán olyan feladatokat és problémákat volt feladatom találni a témán belül, amikkel a feladatomat kibővíthetem.
+
+Ezt követően folytassam az irodalomkutatást, hogy a kibővített problémakörre találjak már létező megoldásokat, vagy csak segítséget ahhoz, hogy ki tudjak indulni valamiből.
+Mások munkáit olvasva a program egyes részproblémáinak megoldására próbáljak egyre több féle megközelítést találni, és ezeket mindenképpen hasonlítsam majd össze, és jussak valami következtetésre.
+Az így keletkezett megoldásokat fel tudjam használni majd a programomban és végül egy bizonyos szempontból egy optimális megoldással tudjak előállni.
+Az szerzett ismeretek alapján ezt követően feladatom, hogy specifikáljam a program elvárt működését, majd tervezzem is meg.
+Tervezés közben gondoljam végig, hogy mi szükséges a program elkészítéséhez és a különböző tervezői döntéshelyzetekben idoklással hozzak lehetőleg helyes döntéseket.
+Tervezés közben teszteljem a megoldásomat gyakran, és ha lehet a problémát osszam többrészre, hogy elkülönítve a tesztelés csak egy-egy egységre történjen egyszere.
+Ezzel segítsem azt, hogy a program felépítése legyen egységekre bontva, és megfelelően szervezve. 
+Ezt mind a működőképességért, az áttekinthetőségéért, és a jövőbeli továbbfejlesztési lehetőség fenntartása érdekében tegyem meg.
+Majd a program elkészülését követően vizsgáljam meg a működését, és telszteljem helyességét a gyakorlatban.
+A szimuláció paramétereit a valóságnak megfelelően választva vessem össze, hogy az eddigi ismereteinkkel összeegyeztethető az eredmény.
+Ha nem az elvárt eredmény kapom, vizgsáljam át esetleges hibák után kutatva a programom, vagy indokoljam meg, hogy mi okozhatja a eltérést.
+
+
+
+Program készítése során feladatom már létező algoritmusok részletesebb megismerése, és számomra specifikus algoritmusok kifejlesztése és létrehozása.
+Ezen algoritmusok nem csak gyorsak legyenek, hanem hatékonyak is, és lehetőleg hasonlítsak össze több megoldást is.
+Eznen algoritmusokhoz feladatom olyan adatmodellt alkotni, amellyel könnyen lehet dolgozni, és a felépítése logikus.
+A programot feladatom úgy létrehozni, hogy lehessen paraméterezni, például ne csak egy előre betáplált területtel, alaprajzzal dolgozzon.
+Lehessen új alaprajzokat megadni a programban, és lehessen változtatni az emberek főbb paramétereit az adott környezetre jellemző értékekre.
+Mindehhez egy olyan grafikus felületet alkossak, amely alkalmas az adatok olyan megjelenítésére, hogy könnyen értelmezhetőek legyenek, és a program működése szemmel látható legyen.
+
+
+
+
+
+
+
+
+(majd)
+
+Még mielőtt a program készítéséhez volna, specifikáltam, hogy mik legyenek a pontos elvárások felé.
+Alapvető, hogy legyen működőképes.
+Legyen minél hatékonyabb, hogy minél nagyobb területen minél több ember mozgását tudja egységnyi idő alatt kiszámítani.
+Lehetőség szerint minél könnyebben lehessen paraméterezni.
+A járókelők mozgása legyen természetes.
+A valóságot lehetőleg minél jobban közelítse meg.
+És legyen ennek reprezentálására egy grafikus felülete.

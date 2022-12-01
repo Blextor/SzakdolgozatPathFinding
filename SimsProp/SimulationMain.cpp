@@ -164,6 +164,39 @@ struct Vilag{
 };
 
 
+struct Hely{
+    vec2 szobaPoz;
+    vec2 valosPoz;
+
+    bool foglalt = false;
+
+    float ertek;
+};
+
+struct Kapacitas{
+    vector<Hely> oktatoknak;
+    vector<Hely> diakoknak;
+
+    int maxDiak, maxOktato;
+};
+
+struct Szoba{
+    int id;
+    string nev;
+
+    vector<Sikidom> korvonal; /// alaprajz szerinti
+    vector<Sikidom> belsoTer; /// termek berendezései
+
+    vector<int> kijarat; /// ???
+
+
+};
+
+struct Emelet{
+    vector<Szoba> szobak;
+    vector<pair<int,int>> szomszedosSzobak;
+};
+
 /// megjelenítéshez szükséges globális változók
 //vec2 camera(-40,-40);
 Kamera kamera;

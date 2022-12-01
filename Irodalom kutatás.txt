@@ -1,0 +1,200 @@
+Irodalom kutatás
+
+
+Kiindulásként a programozási nyelvet kívántam megválasztani, olyat, ami a feladathoz megfelelő és az iparban elterjedt nyelv a mai nap is.
+Egy széleskörben elterjedt, az számos iparágban* jelenleg is használatos nyelvet válaszottam így, amiben lehetséges objektum orientált szemléletet követni.
+Az algoritmusok hatékony működése mellett szükségesnek tartottam egy gyors nyelvet is, hogy ezen tényező biztosan ne legyen hátráltató tényező.
+Ezért döntöttem a C++* nyelv mellett. 
+A megjelenítéshez kellett választanom egy grafikus könyvtárat, a Simple DirectMedia Layer 2-t (SDL2) válaszottam.
+az alapvető funkciókat ellátja, egyszerűbb geometriai alakzatok kirajzolására képes grafikus könyvtár.
+Működése egyszerű, hatékonysága különösebben ennél a feladatnál nem számít, mert nem szükséges komoly látványos grafikát megvalósítanom.
+A feladathoz szükséges adatok értelmezését nagyban segítő reprezentáláshoz bőven elegendő eszköztárral rendelkezik.
+Továbbá a felhasználói bemeneteket, mint az egér mozgatása és a vele történő kattintás és görgetés, továbbá a billenytűzet minden gombját is kezeli.
+Ezért megfelelő a feladathoz.
+
+Ezt követően, előnyeben részesítve a választott nyelvet, elkezdtem keresni a témában munkákat, cikkeket, dolgozatokat, hogy a program tervezésnél minél több problémára tudjak figyelni és már kész megoldás alapján nekiállni.
+Kiindulásként szükséges volt keresnem olyan már létező megoldásokat, ahol az útvonalkereséssel már évek óta foglalkoznak.
+A játékiparban már évtizedek óta foglalkoznak azzal, hogy különböző egyedek, emberek vagy objektumok a gép által vezérelve eljussanak A pontból B pontba.
+Egy nagyon régi példát említve már több, mint negyven éve alkották meg az első PAC-MAN*-t, amelyben a játékost a játéktéren szellemek próbálták elkapni.
+Ebben a példában a szellemekből négy volt és mindegyiknek saját logikája volt.* 
+A szellemek útvonalkeresésétt Dijkstra algoritmus segítségével is valósíthatták meg.*  A teljesség kedvéért kifejtem az algoritmust.
+
+Az algoritmust a legrövidebb út problémára megoldás. Edsger W.Dijkstra (1930 - 2002) holland matematikustól származik. 
+Az algoritmushoz szükséges egy élsúlyozott gráf és csak abban az esetben működik helyesen, ha minden él súlya nemnegatív.
+Jelen példánkban nincs erre precedens, így alkalmas megoldás az útvonalkeresésre, továbbá összefüggő is a gráfunk így kevesebb problémát kell vizsgálnia. 
+Ugyanis a játéktér tekinthető egy négyzetrács hálónak, és ha jobban megnézzük, akkor ezen háló szabad mezőiből tudunk csoportokat alkotni, amelyeket élekként és csúcsokként gráfba tudunk szervezni.
+Az algoritmus mindig a legrövidebb útvonalat adja vissza a gráfban, és futásideje is kedvező.
+Az algoritmus egy gráfot használ keresési tereként, és két a csúcsát kezdő és végpontként. 
+Kezdő csúcs minden szomszédos csúcsát egy értékkel látja el.
+Az csúcsba vezető élek súlyát veszi a csúcsok értékének. 
+Ezt követően kiválasztja azt a csúcsot, amelynek az értéke a legkisebb, és az ő szomszédjainak az értékét úgy adja meg, hogy nem csak a csúcshoz vezető él súlyát veszi figyelembe, 
+hanem a azt is, hogy magának a csúcsnak mekkora az értéke. Azaz a csúcshoz vezető út éleinek súlyának mennyi az összege a kezdőpontból.
+Fontos, hogy ha annak a csúcsnak, melynek értéked ada, már van értéke, és az kisebb vagy egyenlő, akkor nem bírálja felül, és a kisebb értékét meghagyja.
+Ellenkező esetben a kifejtett csúcson keresztüli út élek súlyainak összességét adja neki értékül. 
+Ez az eset azt jelenti, hogy vagy elsőként adott értéket a csúcsnak, azaz fedezte fel a gárfban, vagy talált egy rövidebb utat a kezdőpontból a csúcsig.
+A csúcsok kifejtése, és az algoritmus futása addig tart, amikor a végpont csúcsát fejtené ki. Ekkor ugyanis a végpont csúcsának értéke adja meg, a legrövidebb utat a két csúcs között.
+Azért fontos, hogy ne akkor álljon le az algoritmus, amikor először felfedezi az végpont csúcsát, mert még utána lehet, hogy talál egy rövidebb utat a végpontig.
+Viszont, mikor a végpont csúcsát fejti ki az algoritmus, akkor az azt vonja magával, hogy más kifejtésre váró csúcs értéke legalább annyi, mint a végpont csúcsa.
+Ekkor mivel nincsen negatív él, ezért a kifejtendő csúcsokból már biztosan nem lehet rövidebb utat találni a végpontba, így a feladatát az algoritmus elvégezte, és leállhat. 
+
+Fontos, hogy ezen algoritmus használata során felfedezett csúcsokhoz el kell tárolni az értékén kívül a kíszámításának módját is, valamilyen módon.
+Különben egyetlen számértéket visszakapva a legrövidebb utat nem tudnánk meghatározni, csak a hosszát az útnak.
+Ezért fontos, például a felfedezett csúcsokhoz eltárolni az értékükön kívűl azt is, hogy melyik csúcsból lett kifejtve az értékük.
+Ebben az esetben a végpontból kiindulva meg kell vizsgálni azt a csúcsot, amiből ki lett fejtve a legkisebb értéke.
+És azt a csúcsot is, amelyből az ki lett fejtve, és így tovább egészen a kezdőpont csúcsáig. 
+Bizonyítás nélkül, de igaz, hogy ezen út így előáll a visszafele haladva megvizsgált csúcsokból és a legrövidebb is lesz a két pont között.
+
+
+Ezen algoritmus nagyon közel áll egy mai napon is, a játékiparban standard algoritmushoz, az A* (kiejtve a csillag) algoritmushoz.
+Ennek az algoritmusnak több átdolgozott verzióját is használtam a programomban végül.
+Az Dijkstra algoritmus publikálását követően tizenkettő évvel később publikálták az A*-ot először, az Dijkstra algoritmus kiegészítéseként.
+Az algoritmus abban volt több, és a gyakorlatban a későbbiekben sokkal hatékonyabb, hogy a csúcsokhoz rendelt értéket új heurisztikával adta meg.
+Az A*-ot akkor lehet használni, ha létezik olyan költség becslést végző függvény, amely a végpont csúcsáig tetszőleg csúcsból képes olyan távolság becslést adni, 
+amely sosem lehet több, mint a tényleges út hossza, abból a csúcsból.
+Ekkor ugyanis a heurisztika a következő. 
+A csúcs értékének ne az odáig vezető út éleinek súlyát adjuk meg, hanem külön adjuk hozzá ennek a becslés végző függvény értékét a csúra nézve.
+Az onnan kifejtett csúcs értékét nem az előző csúcs értéke és az összekötő él súlya adja majd, 
+hanem az előző csúcs érétkének a becslést végző függvény értékének hozzáadását megelőző érték, az összekötő él súlya és a becslő függvény értéke a csúcsra adja majd.
+Az algoritmus továbbra is egy csúcs kifejtése során minden szomszédos csúcsot kifejt, viszont akkor áll le, amikor először felfedezi a csúcsot.
+Ehhez viszont elengedhetetlen egy jó távolság becslést végző függvény.
+A heurisztika és az algoritmus végének módosítása hatékonyabbá teszi az útvonalkeresést nagyságrendekkel a Dijkstra algoritmushoz képest.
+Gyakori megoldás a költség függvények a két csúcs távolsága a térben. Erre lehetőség van olyan esetekben, amikor a gráf csúcsai valamilyen teret írnak le.
+
+Ilyen tér például lehet egy olyan gráf, ahol a csúcsok városok, az élek meg a városokat összekötő út hossza. Ekkor a távolságbecslő függvénynek alkalmas megválasztani a városok távolságát légtávolságban.
+PAC-MAN példáját véve az A* nem használható könnyen, mert a játéktér két pontja között nem lehet könnyen könynen helyes becslést végezni hasonló módon. 
+Ugyanis a vízszintesen középen lévő átjáró a játéktér egyik oldalát összeköti a másik oldalával. Ekkor ami a képernyőn egy egység távolságnak tűnik, az igazából az átjáró okán lehet nulla is.
+Ennek okán olyan távolság becslő függvényt kéne megválasztani ahhoz, hogy az algoritmushoz megfelelő függvény legyen, amely ezt figylebe veszi.
+A két példa között különbségként az hozható fel, hogy a legrövidebb út a térképnél az egyenes, addig a PAC-MAN-nél nem.
+
+Megjegyezném, hogy az olyan A* algoritmus, amely a végpont csúcsát kifejtve áll le, és a becslést végző függvény csak nullát ad vissza, az a Dijkstra algoritmus.
+
+
+Azért fejettem ki ezen két algoritmust mert a kutatás során fontos volt a megismerésük, és a programomban az A* algoritmust számos alkalommal használom.
+Azért elterjed az iparban is az algoritmus, mert ha lehet helyes költség becslő függvény találni, akkor az algoritmus hatékonysága kiugróan magas.
+Az útvonalkeresés elengedhetetlen része az A* algoritmus. 
+
+
+Ezt követően fontosnak tartottam, hogy legyen is olyan gráfom, amin lehet az algoritmust futtatni. 
+Ahogy a példákkal mutattam, nem minden esetben lehet kihasználni a heurisztikáját, viszont az ember mozgásánál ezzel nincsen probléma.
+Ahogy a valóságban, úgy a programomban is a legrövidebb út az egyenes lesz. 
+A különböző komplexitású problémákra különböző gráfokat sikerült találnom. 
+Egyik példának a sakkot találtam, ha a királlyal lépünk. Ekkor a játéktér véges, és a király helyzete csak diszkrét és véges lehet.
+Összesen hatvannégy mezőn lehet, és az A* algoritmus is helyesn alkalmazható, mert a király lépésére elmondható, hogy legrövidebb út, az egyenes.
+Kifejezetten nem mondható ez el a király helyett a lóról például.
+A király esetében van hatvannégy csúcs a gráfban, és egy csúcs legalább három, de akár nyolc másik csúcsal is össze van kötve.
+Ezen megoldást annak ellenér emegvizsgáltam, hogy nem írja le a valóságot, mert egy ember tetszőlegesen sok helyen állhat egy szobában, nem csak pontosan hatvannégy helyen.
+
+Izgalmasabb problémának tűnik az, amikor a gráf egy épület emeletének, vagy csak egy szobának a bejárhatóságát írja le.
+Ez azt jelenti, hogy a bejárható tér még lehet véges, de a helyzete az embereknek már nem. Így lényegében végtelen csúcsa lenne a helyszínt leíró gráfnak.
+
+Két nagyban különböző gráfot találtam ennek a végtelennek tűnő problémának a megoldására.
+A két gráf magyar nevére nincs általánosan elfogadott szó a szakirodalomban, így szabad fordítással a nevük útpont gráf és navigációs háló.*
+Az útpont gráf azt a problémát kívánta megoldani, hogy végtelen csúcsa legyen a gráfnak. Ugyanis a végtelen csúcs közül csak keveset tart meg.
+Ezen csúcsok viszont egész jó képet adnak arról, hogy miként lehet bejárni a teret. Lényegében ezen pontokat követve el lehet jutni a egy épület esetében tetszőleges szobából, egy másik szobába.
+Figyelemmel van arra, hogy a gráf élei bejárhatóak legyenek, azokon végigsétálva falba, vagy más terepobjektumba ne ütközzünk. 
+A csúcsai arra alkalmasak, hogy közülük kiválasszuk a legközelebbit hozzánk, és a végcélunkhoz is a gráf legközelebbi csúcsát, majd a közöttük kiszámított legrövidebb útvonalat, a gráf adott éleit kövessük.
+Ezen megoldás komplexitása abban rejlik, hogy a gráf csúcsait megfelelően kell megválasztani ahhoz, hogy használható legyen a gráf útvonalkeresésre.
+Ha túl ritkák a csúcsok, lehet, hogy a szobába, amibe tervezek menni, nincs is egy csúcsa sem a gráfnak. 
+Ha meg túl sokat választok, vagy nem egyenletesen és megfelelően sűrűn vannak választva a csúcsok, akkor meg a számítási idő fog feleslegesen megnövekedni, esetleg egyes helyiségek bejárhatóságát nem sokban segíti elő.
+A komplexitása abban is megmutatkozik közvetetten, hogy ha nincs komolyabb energia fordítva a gráf kialakítására, és az emberek mozgásának kialakítására, akkor nem lesz életszerű a szimuláció.
+Ugyanis ha mindenki az éleken haladva menne végig a csúcsokon, akkor az emberek mozgása a hangyákéra hasonlítana. Egymást követve vagy szemben lényegében egy sorban haladnak.
+Az emberek viszont kihasználják a teret. Továbbá a nem megefelelő gráf megalkotása esetén az útvonal lehet nagyon szögletes, nem természetes, és se nem a legrövidebb, se nem az ember szokásos útvonala.
+Ennek okán komoly feladat az, hogy egy tökéletes ilyen gráfot megalkosson az ember.
+Sajnos van egy problémája is. Véges csúcs okán nem lehet minden pontjára a helyszínnek eljutni, csak a gráf csúcsaira, esetleg éleire.
+Amikor elindulna a programban az ember, akkor először el kéne jutnia a gráf egyik csúcsához, és mikor azon végighalad, akkor az utolsó csúcstól el kell találnia valahogyan a saját céljáig.
+Ez viszont azt vonja magával, hogy két útvonal kereső algoritmust is kell használnia.
+Természetesen ezen megoldás a hibáinak a nagy részét az képzi, hogy automatikusan generálni ilyen hálót komplex probléma. 
+Viszont ha sikerül, akkor kifejezetten hatékony, de az emberek természetes mozgatása továbbra is kérdése benne.
+
+A másik létező megoldás, a navigációs háló, angol nevén Navigation Mesh (NavMesh). **
+Ez a végtelen csúcs problémáját az eredeti problémának úgy orvosolja, hogy a helyszínt, a teret háromszögekkel, vagy egyéb konvex sokszögekkel fedi le.
+Ekkor lesz egy háromszögek éleiből álló háló, és egy plusz információ halmaz, ami az, hogy a gráf mely élei alkotnak háromszöget, és vagy hogy mely élei határozzák meg a tér határait.
+Ekkor a helyszín minden bejárható pontja valamelyik háromszög élére vagy beljesébe esik. A háromszögek nem lapolódnak át, így könnyű meghatározni, hogy a háromszögek melyikébe esik az adott pont.
+Az útvonal keresés ebben a megoldásban úgy zajlik, hogy a kiindulási csúcshoz megtalálja azt a háromszöget, amiben benne van.
+Majd ennek a háromszögnek a csúcsaiból, vagy csak az egyikéből az A* algoritmust lefuttatva eljut azon háromszög csúcsáig, amelyben benne van az elérni kívánt végcél, mint pont.
+Ennek a megoldásnak nem nehézsége, hogy a hálót létre kell hozni. Rengeteg megoldás van erre a problémára. 
+Lehet például mindig csak egy olyan szakaszt behúzni az alaprajznak tekinthető gráfba, amelyre igaz, hogy két olyan szakaszt köt össze, ami részét képzi az alaprajznak és van egy közös csúcsuk, 
+továbbá az alaprajz egyetlen másik csúcsát .
+Ahogy behúztuk az új szakaszt, elmentjük a többi behúzott szakasszal, és azt az alaprajz részének tekintjük onnan, és az előbb említett két élt kitöröljük. 
+Mivel minden egyes él behúzása után kettőt törlünk, ezért lépésenként csökkennek a módosított alaprajz élszáma. Addig kell behúzni így szakaszokat, míg egy háromszög marad csak.
+Akkor az algoritmus leáll, és az elmentett behúzott éleket felvesszük a gráfba.
+Ekkor a gráf éleiből háromszögeket képzünk és kész is van a navigációs háló.
+
+Ezen a háló azért jól használható, mert szomszédos konvex sokszögekből épül fel. Nem szükséges háromszögekkel dolgozni, lehet téglalapokkal vagy sokszögekkel is, 
+csak az a lényeg hogy konvex legyen. Ezt a tulajdonságot kihasználva síkidomokon belül az egyes pontok közötti út, az a két pontot összekötő szakasz.
+Ha több háromszöget is érint az útkeresés, mert nincsenek egy háromszögben a kezdő és végpontok, akkor a háromszög láncon keresztül még ki is lehet egyenesíteni az útvonalat.
+Komoly probléma ez a legrovidebb út meghatározásában mind a két hálóban, ugyanis itt komoly számítást igénylehet nem csak a háromszögek oldalain, mint gráfon lefuttatni az A*-ot, hanem ki is egyenesíteni az útvonalat.
+Míg az előzőben a gráf pontjaival vagyunk csak képesek dolgozni, ami csak véges lehetőséget biztosít, így ritkán adja vissza a legrövidebb utat.
+
+A programomban a navigációs háló megvalósítása, és használata mellett döntöttem. Ugyanis a generálható útvonal sokkal jobban hasonlít a valóságoshoz a navigációs hálóval, mint az útpont gráffal.
+Az útvonal generálása lasabb, mint egy tökéletes útpont gráfban, de a természetes útvonalra törekszem, hogy az emberek mozgása hiteles lehessen.
+A navigációs hálót a mai napig használják a játékiparban, különböző játék motorokban, például a Unity-ben* a gép által vezérelt entitásokat ennek segítségével navigálja.
+
+A generált útvonalat lehet végtelenségig finomítani, természetessé tenni. Nem csak élek mentén lehessen haladni, hanem különböző görbék mentén, de erre a szakdolgozatomban nem térek ki. 
+
+
+
+Most, hogy tudatában vagyok annak, hogy milyen módon tudok útvonalat generálni, fontos lenne ezt egy embernek ezt végig is sétálni.
+Ennek okán az emberek mozgásával kapcsolatos információk után kerestem.
+A programomban fontosnak tartom, hogy az emberek ne pontszerű lények legyenek, és a sebességük ne legyen se lassú, se gyors, hanem amit várhatóan a valóságban is megtörténne.
+Különböző kutatások más más eredményeket publikáltak, így nehéz megmondani, hogy mi az igaz.
+Az ember válszélességét vettem alapul az ember szélességének. Ez az érték a nőknél és a férfiaknál eltérő, és az évtizedenk alatt szemmel látható mértékben nőttek ezek az értékek az elmúlt hatvan évben.
+Az Amerikai Egyesült Államokban végzett felmérés szerint az 1960-as években a felnőtt nők válszélessége átlagosan 35.3 cm széles volt, a férfiaknak kicsivel több, 39.6 cm volt ez az érték átlagosan. !!!
+Ezen értékek a 90-es évek elejére a nőknél 36.7 cm-re, a férfiaknál 41.1 cm-re növekedett. Egyértelmű különbség van köztük.
+A megoldásomban ezek alapján majd 30 cm és 50 cm közötti válszélességű emberekkel fogok dolgozni. Az más ország adatait ezen határok közé feltételezem.
+Egyetemi körülményeket tervezek szimulálni, ahol az emberek viszonylag nyugodtak, mozgásuk során nem futnak, ha nem főképp, csak sétálnak.
+Ezért nem számolok gyermekek vállszélességével, mert egyetemen szinte csak felnőtt ember fordul meg, nyíltnapokat leszámítva.
+És ezért nem számolok azzal sem a programom tervezése során, hogy valaki fut, mert ritkán tapasztalható csak az, hogy valaki a gyors sétánál gyorsabban haladna.
+
+Utána néztem, hogy milyen sebességgel sétálnak az emberek. Az egyetemen hasonlóan viselkednek a mozgásuk szempontjából az emberek, mint az utcán. 
+Ismerősökkel, vagy a csoporttal együtt tartanak, viszont ismeretlenektől próbálnak megfelelő távolságot tartani.
+Ennek okán mikor egy előadásnak vége, és egyszerre próbálja elhagyni akár kétszáz diák egy termet, akkor az egyén sebessége lelassul.
+Ugyanis várakozni kell másokra, és a kölcsönös távolságtartást sem lehet megtartani. Ezért a többiek mozgását folyton figyelni kell, mert a bizonytalanság nagyobb ilyen helyzetekben, mikor ritkábban vannak az emberek.
+A bizonytalanság esetén lassabb sebességt választunk, kisebb lesz a lépés hosszunk, és több energiát fordítunk a helyzet felismerésre.
+A lépéshossz másokra lépés elkerülése érdekében történhet, a helyzet felismerése, a tömeg megkerülése meg szintén igényel valamivel több energiát, mint ha egyedül sétálna az ember az utcán.
+Az egyik legfontosabb paraméternek néztem így utána, hogy az embereknek mekkora az átlagos sebessége adott sűrűségű tömegben, milyen kapcsolat van a két érték között.
+Kutatási eredmények itt is sajnos eltérő számértékeket hoztak eredményként, mert más más környezetben végezték a méréseket.
+Fontos paraméter, hogy van-e az embereknél valamilyen táska, esetleg bőrönd, vagy valamilyen olyan dolog, ami mozgását lassítja, és mások mozgását akadályozza.*
+Ennek okán ha egyedül mozog az illető, haladhat akár 2 m/s-mal de akár csak 1.6-tal is. Ahogy a tömegben szinén eltérő eredményeket kaphatunk különböző mérések során.
+Az ember tömeg 1 ember/m^2 sűrűség esetén az egyén sebességét 0.7 m/s-től egészen 1.3 m/s-ig tehetjük az egyén sebességét. 
+Ez az intervallum 3 ember / m^2 esetén már csak 0.2 m/s-tól 0.8 m/s-ig tart. És egészen 7-8 ember/m^2 -ig leht számolni azzal, hogy még a tömeg lényeges mozgást végez. 
+
+Az egyetemen nincs abból probléma, hogy valamire várakozni kell, de haladni kell. Amíg vannak a teremben, addig nem kell bemenni oda.
+Ha el akarjuk hagyni az épületet, vagy a termet, azt szabadon megtehetjük. Mindig halad a tömeg, maximum a szűkületek szabnak határt a sebességnek.
+Egyetlen szituációban lehet érdemes várakozni, ha a lift használatáról van szó. A liftek előtt gyűlő tömeg ritkán éri el azt a kiritikus szintet, hogy komolyan zavaró, és kifejezetten akadályozó legyen jelenlétük.
+Ennek okán, programomat nem tervezem arra, hogy váratlan okokból nem lehet valahol haladni, például leomlott a mennyezet vagy pánikoló tömeggel kéne szembe, vagy együtt haladni.
+
+Tűz esetén sem pánikolnak az emberek. Ezt rengeteg épülettűzből levont tapsztalat alapján ki tudjuk jelenteni.*
+Az emberek ugyan úgy higgadtak maradnak, és nagy részük fel sem fogja kezdetbenm vagy el sem hiszi, hogy baj van.
+Mikor realizálódik bennük, hogy tényleges a veszély, akkor sem vesztik el higgadtságukat és próbálják a megfelelő lépéseket megtenni.
+De nem tapossák el egymást, és kifejezetten figyelnek másokra és segítenek is másoknak, ha rászorulnak. Kifejezetten ritkán kerül sor arra, hogy pánik törjön ki az egész épületben.
+
+Arra viszont tervezem a programomat, hogy az emberek egymástól tartsanak kellő távolságot, és engedjék ele egymást, ha a normák úgy diktálják.
+Legyenek figyelmesek arra, hogy ők éppen a termből kijönnek, azaz elsőbbségük van, vagy a terembe terveznek bemenni.
+
+Fontos tényező az is, hogy az emberek a mozgásuk közben ha befordulnak egy sarkon, akkor nem ismerik a sarkon túli környezetet, továbbá a sarokhoz közeledve sebességük le is csökken.
+Ennek megoldása komplex feladat, és csak próbálkozást teszek a programomban ennek figyelembe vételére.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

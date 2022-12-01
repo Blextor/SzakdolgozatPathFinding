@@ -1,0 +1,32 @@
+Dr. Goldschmidt Balázs
+
+Témák:
+
+alkalmazásai
+
+irodalom kutatás eredményei
+általuk szerzett információ alapján történő kiindulás
+(saját út járását hogy tudom elvetetni bennük)
+
+
+Bevezetés
+
+
+
+Alapok, hogy mire lenne szükség
+	A terep adatainak eltárolása: 
+		célpontok meghatározása, 
+		a területen útvonalkeresésre lehetőség,
+		járókelők kezelése, mozgatása
+
+	Program szinten:
+		hatékonyság, 
+		kevésbé számítás intenzív,
+		memória igényesség,
+		robosztusság,
+
+	Plusz:
+		nem csak diszkrét pozíciók, 
+		gyorsabb, valósidőben történő számításra lehetőség		
+		más megközelítések
+		

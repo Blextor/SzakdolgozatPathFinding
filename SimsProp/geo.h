@@ -164,7 +164,6 @@ struct Haromszog{
     /// terület alapján adja meg, hogy egy pont részét képzi-e, vagy sem
     bool benneVanAPont(vec2 pont){
         vec2 csucs(pont);
-        //Csucs *cs1 = &csucs;
         double elvileg = Haromszog(A,B,csucs).area() + Haromszog(A,C,csucs).area() + Haromszog(C,B,csucs).area();
         double epszilon = 0.01;
         if (area()+epszilon>=elvileg)
