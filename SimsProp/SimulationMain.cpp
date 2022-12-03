@@ -403,14 +403,70 @@ struct Szoba{
     }
 };
 
+struct Ajto{
+    vec2 a,b,c,d;
+};
+
 struct Emelet{
     vector<Szoba> szobak;
-    vector<vector<int>> szomszedosSzobak;
+    //vector<vector<int>> szomszedosSzobak;
     vector<vector<int>> szobakSzomszedjai; /// másik szobaIndexek
     vector<vector<int>> szobakSzomszedjainakAjtoi; /// másik szobába vezető ajtók indexe
 
+    vector<Ajto> ajtok;
+
     Vilag egeszV;
     Palya pegesz;
+
+    void getAjtok(){
+        for (int i=0; i<szobakSzomszedjai.size(); i++){
+            for (int j=0; j<szobakSzomszedjai[i].size(); j++){
+                if (szobakSzomszedjai[i][j]<i)
+                    continue;
+                Ajto ajto;
+
+                int masodikSzobaIdx = szobakSzomszedjai[i][j];
+                int elsoSzobaAjtoSzakaszIdx = -1, masodikSzobaAjtoSzakaszIdx = -1;
+                int elsoSzobaAjtoIdx = -1, masodikSzobaAjtoIdx = -1;
+                elsoSzobaAjtoIdx=szobakSzomszedjainakAjtoi[i][j];
+                elsoSzobaAjtoSzakaszIdx=szobak[i].kijarat[elsoSzobaAjtoIdx];
+                Szakasz ajto1 = szobak[i].alaprajz[0].szakaszok[elsoSzobaAjtoSzakaszIdx];
+
+                for (int k=0; k<szobakSzomszedjai[masodikSzobaIdx].size(); k++){
+                    if (szobakSzomszedjai[masodikSzobaIdx][k]==i){
+                        masodikSzobaAjtoIdx=szobakSzomszedjainakAjtoi[masodikSzobaIdx][k];
+                    }
+                }
+                masodikSzobaAjtoSzakaszIdx=szobak[masodikSzobaIdx].kijarat[masodikSzobaAjtoIdx];
+                Szakasz ajto2 = szobak[masodikSzobaIdx].alaprajz[0].szakaszok[masodikSzobaAjtoSzakaszIdx];
+
+                float aT = INT_MAX, bT=INT_MAX;
+                for (int k=0; k<szobak[i].navigaciosTerSzele.alaprajzhozTartozo[0].szakaszok.size(); k++){
+                    if (szobak[i].navigaciosTerSzele.alaprajzhozTartozo[0].szakaszok[k].p1.dist(ajto1.p1)<aT){
+                        aT = szobak[i].navigaciosTerSzele.alaprajzhozTartozo[0].szakaszok[k].p1.dist(ajto1.p1);
+                        ajto.a=szobak[i].navigaciosTerSzele.alaprajzhozTartozo[0].szakaszok[k].p1;
+                    }
+                    if (szobak[i].navigaciosTerSzele.alaprajzhozTartozo[0].szakaszok[k].p1.dist(ajto1.p2)<bT){
+                        bT = szobak[i].navigaciosTerSzele.alaprajzhozTartozo[0].szakaszok[k].p1.dist(ajto1.p2);
+                        ajto.b=szobak[i].navigaciosTerSzele.alaprajzhozTartozo[0].szakaszok[k].p1;
+                    }
+                }
+
+                float cT = INT_MAX, dT=INT_MAX;
+                for (int k=0; k<szobak[masodikSzobaIdx].navigaciosTerSzele.alaprajzhozTartozo[0].szakaszok.size(); k++){
+                    if (szobak[masodikSzobaIdx].navigaciosTerSzele.alaprajzhozTartozo[0].szakaszok[k].p1.dist(ajto2.p1)<cT){
+                        cT = szobak[masodikSzobaIdx].navigaciosTerSzele.alaprajzhozTartozo[0].szakaszok[k].p1.dist(ajto2.p1);
+                        ajto.c=szobak[masodikSzobaIdx].navigaciosTerSzele.alaprajzhozTartozo[0].szakaszok[k].p1;
+                    }
+                    if (szobak[masodikSzobaIdx].navigaciosTerSzele.alaprajzhozTartozo[0].szakaszok[k].p1.dist(ajto2.p2)<dT){
+                        dT = szobak[masodikSzobaIdx].navigaciosTerSzele.alaprajzhozTartozo[0].szakaszok[k].p1.dist(ajto2.p2);
+                        ajto.d=szobak[masodikSzobaIdx].navigaciosTerSzele.alaprajzhozTartozo[0].szakaszok[k].p1;
+                    }
+                }
+                ajtok.push_back(ajto);
+            }
+        }
+    }
 
     vector<Szakasz> getSzobaHatar(int szobaIdx, int fromIdx=-1){ /// lehetőleg az ajtók ne legyenek a síkodomnak a szakaszlistájának elején és végén is
         vector<Szakasz> ret;
@@ -505,6 +561,9 @@ struct Emelet{
         szobakSzomszedjainakAjtoi[2].push_back(0);
         szobak[1].getIntrest(3,szobak[0],0);
         szobak[2].getIntrest(0,szobak[1],1);
+        for (int i=0; i<szobak.size(); i++){
+            szobak[i].createVilag();
+        }
         cout<<"ALMA"<<endl;
         cout<<-4<<" "<<(-4%3)<<endl;
 
@@ -518,13 +577,14 @@ struct Emelet{
                 egeszV.alaprajz.push_back(szobak[i].alaprajz[j]);
             }
         }
+
         egeszV.alaprajzhozTartozoLetrehozasa();
-        pegesz.sikidomok=egeszV.alaprajzhozTartozo;
+        getAjtok();
+
+        //pegesz.sikidomok=egeszV.alaprajzhozTartozo;
         //pegesz.bakeNavMesh();
 
-        for (int i=0; i<szobak.size(); i++){
-            szobak[i].createVilag();
-        }
+
     }
 
     void draw(SDL_Renderer &renderer, Kamera kamera){
@@ -532,6 +592,28 @@ struct Emelet{
         pegesz.draw(renderer,kamera);
         for (int i=0; i<szobak.size(); i++)
             szobak[i].draw(renderer,kamera);
+        for (int i=0; i<ajtok.size(); i++){
+            filledTrigonRGBA(&renderer,
+                            kamera.valosLekepezese(ajtok[i].a).x,kamera.valosLekepezese(ajtok[i].a).y,
+                            kamera.valosLekepezese(ajtok[i].b).x,kamera.valosLekepezese(ajtok[i].b).y,
+                            kamera.valosLekepezese(ajtok[i].c).x,kamera.valosLekepezese(ajtok[i].c).y,
+                            255,0,0,255);
+            trigonRGBA(&renderer,
+                            kamera.valosLekepezese(ajtok[i].a).x,kamera.valosLekepezese(ajtok[i].a).y,
+                            kamera.valosLekepezese(ajtok[i].b).x,kamera.valosLekepezese(ajtok[i].b).y,
+                            kamera.valosLekepezese(ajtok[i].c).x,kamera.valosLekepezese(ajtok[i].c).y,
+                            0,255,0,255);
+            filledTrigonRGBA(&renderer,
+                            kamera.valosLekepezese(ajtok[i].d).x,kamera.valosLekepezese(ajtok[i].d).y,
+                            kamera.valosLekepezese(ajtok[i].a).x,kamera.valosLekepezese(ajtok[i].a).y,
+                            kamera.valosLekepezese(ajtok[i].c).x,kamera.valosLekepezese(ajtok[i].c).y,
+                            255,0,0,255);
+            trigonRGBA(&renderer,
+                            kamera.valosLekepezese(ajtok[i].d).x,kamera.valosLekepezese(ajtok[i].d).y,
+                            kamera.valosLekepezese(ajtok[i].a).x,kamera.valosLekepezese(ajtok[i].a).y,
+                            kamera.valosLekepezese(ajtok[i].c).x,kamera.valosLekepezese(ajtok[i].c).y,
+                            0,255,0,255);
+        }
     }
 };
 
