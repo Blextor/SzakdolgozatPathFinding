@@ -39,7 +39,7 @@
 	"common.h"
 	"vec3.h"
 
-1669519516 c:\users\sajat\documents\github\szakdolgozatpathfinding\simsprop\common.h
+1669980308 c:\users\sajat\documents\github\szakdolgozatpathfinding\simsprop\common.h
 	<vector>
 	<set>
 	<string>
@@ -58,6 +58,7 @@
 	<system_error>
 	<windows.h>
 	<stdlib.h>
+	<fstream>
 
 1669927314 c:\users\sajat\documents\github\szakdolgozatpathfinding\simsprop\vec3.h
 	<cmath>
@@ -128,13 +129,13 @@
 
 1669927313 source:c:\users\sajat\documents\github\szakdolgozatpathfinding\simsprop\geo.cpp
 
-1669927313 source:c:\users\sajat\documents\github\szakdolgozatpathfinding\simsprop\simulationmain.cpp
+1670018024 source:c:\users\sajat\documents\github\szakdolgozatpathfinding\simsprop\simulationmain.cpp
 	"common.h"
 	"vec3.h"
 	"geo.h"
 	"camera.h"
 
-1669927313 c:\users\sajat\documents\github\szakdolgozatpathfinding\simsprop\geo.h
+1669992270 c:\users\sajat\documents\github\szakdolgozatpathfinding\simsprop\geo.h
 	"common.h"
 	"vec3.h"
 	"camera.h"

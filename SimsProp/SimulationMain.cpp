@@ -5,6 +5,15 @@
 
 using namespace std;
 
+struct Hely{
+    vec2 szobaPoz;
+    vec2 valosPoz;
+
+    bool foglalt = false;
+
+    float ertek=0;
+};
+
 struct Vilag{
     float agentRadius = 5.0f;
     vector<Sikidom> alaprajz;
@@ -15,7 +24,13 @@ struct Vilag{
     vec2 ujSikidomTempPont;
     bool elsoPont = true;
 
-    Vilag(){}
+    vector<int> ajtok;
+
+    vector<Hely> diakok;
+    Hely oktato;
+    bool atjarhato = false;
+
+    Vilag(){oktato.szobaPoz= vec2(-2000.f,-2000.f);}
 
     void ujSikidomReset(){
         ujsikidom=Sikidom();
@@ -27,15 +42,65 @@ struct Vilag{
         alaprajz.pop_back();
     }
 
+    void utolsoDiakTorlese(){
+        diakok.pop_back();
+    }
+    void OktatoTorlese(){
+        oktato.szobaPoz=vec2(-2000.f,-2000.f);
+    }
+
+    void SetAjto(vec2 pos){
+        float minimalDis = INT_MAX;
+        int oldalIdx = -1;
+        for (int i=0; i<alaprajz[0].szakaszok.size();i++){
+            if (alaprajz[0].szakaszok[i].vec2TavR(pos)<minimalDis){
+                minimalDis=alaprajz[0].szakaszok[i].vec2TavR(pos);
+                oldalIdx=i;
+            }
+        }
+        if (minimalDis<10){
+            ajtok.push_back(oldalIdx);
+        }
+    }
+
+    void save(){
+        string name;
+        cout<<"Elmentendo szoba neve: ";
+        cin>>name;
+        ofstream file("szobak/"+name+".txt");
+        file<<name<<endl;
+        file<<alaprajz.size()<<endl;
+        for (int j=0; j<alaprajz.size(); j++){
+            file<<alaprajz[j].szakaszok.size()<<endl;
+            for (int i=0; i<alaprajz[j].szakaszok.size(); i++){
+                file<<alaprajz[j].szakaszok[i].p1.x<<" "<<alaprajz[j].szakaszok[i].p1.y<<endl;
+            }
+        }
+        file<<ajtok.size()<<endl;
+        for (int i=0; i<ajtok.size(); i++)
+            file<<ajtok[i]<<endl;
+        file<<diakok.size()<<endl;
+        for (int i=0; i<diakok.size(); i++)
+            file<<diakok[i].szobaPoz.x<<" "<<diakok[i].szobaPoz.y<<" "<<diakok[i].ertek<<endl;
+        if (oktato.szobaPoz.x!=-2000 && oktato.szobaPoz.y!=-2000){
+            file<<1<<endl;
+            file<<oktato.szobaPoz.x<<" "<<oktato.szobaPoz.y<<endl;
+        }
+        else
+            file<<0<<endl;
+        file<<atjarhato<<endl;
+        file.close();
+    }
+
     Sikidom alaprajzToTartozo(int idx){
         Sikidom jelenAlap = alaprajz[idx];
         vector<vec2> tartozoCsucsok;
-        cout<<"KEZD"<<endl;
+        //cout<<"KEZD"<<endl;
         for (int i=0; i<jelenAlap.szakaszok.size(); i++){
             vec2 AB = jelenAlap.szakaszok[i].p2 - jelenAlap.szakaszok[i].p1;
             int j = (i+1)%jelenAlap.szakaszok.size();
             vec2 BC = jelenAlap.szakaszok[j].p2 - jelenAlap.szakaszok[j].p1;
-            cout<<"A"<<endl;
+            //cout<<"A"<<endl;
             AB = AB.normalize();
             BC = BC.normalize();
             vec2 AC = AB + BC;
@@ -45,19 +110,19 @@ struct Vilag{
             ACT.rotate(90);
             Szakasz sz1(jelenAlap.szakaszok[i].p1+ABT*agentRadius,jelenAlap.szakaszok[i].p1+ABT*agentRadius + AB * 2000.f);
             Szakasz sz2(jelenAlap.szakaszok[i].p2,jelenAlap.szakaszok[i].p2+ ACT * 2000.f);
-            cout<<"B"<<endl;
+            //cout<<"B"<<endl;
             //cout<<sz1.p1.x<<" "<<sz1.p1.y<<", "<<sz1.p2.x<<" "<<sz1.p2.y<<endl;
             //cout<<sz2.p1.x<<" "<<sz2.p1.y<<", "<<sz2.p2.x<<" "<<sz2.p2.y<<endl;
 
             if (tartozoCsucsok.size()!=0){
                 //tartozoCsucsok[tartozoCsucsok.size()-1]=jelenAlap.szakaszok[j].legyenLegalabbXTavra(tartozoCsucsok[tartozoCsucsok.size()-1],agentRadius);
             }
-            cout<<"C"<<endl;
+            //cout<<"C"<<endl;
             double res = 0, s = 0, t = 0;
             vec2 closest2[2];
             bool Dret = false;
             DistanceSegments2(sz1.p1,sz1.p2,sz2.p1,sz2.p2,res,s,t,closest2,Dret);
-            cout<<"C2"<<endl;
+            //cout<<"C2"<<endl;
             if ((closest2[0]-sz1.p1).length()>(jelenAlap.szakaszok[i].p2+ABT*agentRadius-sz1.p1).length()){
                 vec2 temp = jelenAlap.szakaszok[i].p2+ABT*agentRadius;
                 vec2 b = jelenAlap.szakaszok[i].p2+ACT*agentRadius;
@@ -70,7 +135,7 @@ struct Vilag{
             } else {
                 tartozoCsucsok.push_back(closest2[1]); /// szükséges az 1 a vágáshoz
             }
-            cout<<"D"<<endl;
+            //cout<<"D"<<endl;
             if (!Dret && res<EPSZ && ((t>EPSZ && t<1.0f-EPSZ) || (s>EPSZ && s<1.0f-EPSZ) )){
                 //cout<<"OK"<<endl;
             } else {
@@ -80,12 +145,12 @@ struct Vilag{
             //metszikEgymast()
         }
         jelenAlap.szakaszok.clear();
-        cout<<"ALMA"<<endl;
+        //cout<<"ALMA"<<endl;
         for (int i=0; i<tartozoCsucsok.size(); i++){
             if (tartozoCsucsok[i]==tartozoCsucsok[(i+1)%tartozoCsucsok.size()])
                 tartozoCsucsok.erase(tartozoCsucsok.begin()+i--);
         }
-        cout<<"BALMA"<<endl;
+        //cout<<"BALMA"<<endl;
         for (int i=0; i<tartozoCsucsok.size(); i++){
             int j = (i+1)%tartozoCsucsok.size();
             int k = (i+2)%tartozoCsucsok.size();
@@ -110,7 +175,7 @@ struct Vilag{
             jelenAlap.szakaszok.push_back(sz1);
         }
 
-        cout<<"EALMA"<<endl;
+        //cout<<"EALMA"<<endl;
         jelenAlap.belso=(idx==0);
         return jelenAlap;
     }
@@ -126,12 +191,15 @@ struct Vilag{
 
     void draw(SDL_Renderer &renderer, Kamera kamera){
 
+        int r = 52;
+        if (atjarhato)
+            r=152;
         for (int i=0; i<alaprajz.size(); i++){
             for (int j=0; j<alaprajz[i].szakaszok.size(); j++){
                 lineRGBA(&renderer,
                          kamera.valosLekepezese(alaprajz[i].szakaszok[j].p1).x,kamera.valosLekepezese(alaprajz[i].szakaszok[j].p1).y,
                          kamera.valosLekepezese(alaprajz[i].szakaszok[j].p2).x,kamera.valosLekepezese(alaprajz[i].szakaszok[j].p2).y,
-                         52,240,120,255);
+                         r,240,100+r,255);
                 filledCircleRGBA(&renderer,
                          kamera.valosLekepezese(alaprajz[i].szakaszok[j].p1).x,kamera.valosLekepezese(alaprajz[i].szakaszok[j].p1).y, 5,
                          60,25,40,255);
@@ -160,18 +228,26 @@ struct Vilag{
                          60,160,128,200);
             }
         }
+
+        for (int i=0; i<diakok.size(); i++){
+            filledCircleRGBA(&renderer,
+                     kamera.valosLekepezese(diakok[i].szobaPoz).x,kamera.valosLekepezese(diakok[i].szobaPoz).y, agentRadius,
+                     150,150,255,200);
+        }
+        filledCircleRGBA(&renderer,
+                 kamera.valosLekepezese(oktato.szobaPoz).x,kamera.valosLekepezese(oktato.szobaPoz).y, agentRadius,
+                 255,150,100,200);
+        for (int i=0; i<ajtok.size(); i++){
+            lineRGBA(&renderer,
+                     kamera.valosLekepezese(alaprajz[0].szakaszok[ajtok[i]].p1).x,kamera.valosLekepezese(alaprajz[0].szakaszok[ajtok[i]].p1).y,
+                     kamera.valosLekepezese(alaprajz[0].szakaszok[ajtok[i]].p2).x,kamera.valosLekepezese(alaprajz[0].szakaszok[ajtok[i]].p2).y,
+                     255,255,0,255);
+        }
     }
 };
 
 
-struct Hely{
-    vec2 szobaPoz;
-    vec2 valosPoz;
 
-    bool foglalt = false;
-
-    float ertek;
-};
 
 struct Kapacitas{
     vector<Hely> oktatoknak;
@@ -183,18 +259,158 @@ struct Kapacitas{
 struct Szoba{
     int id;
     string nev;
+    bool atjarhato = false;
 
-    vector<Sikidom> korvonal; /// alaprajz szerinti
-    vector<Sikidom> belsoTer; /// termek berendezései
+    vector<Sikidom> alaprajz; /// alaprajz szerinti
+    Vilag navigaciosTerSzele;
+    Palya navigaciosTer;
+    //vector<Sikidom> belsoTer; /// termek berendezései
+
+    vector<Hely> diakok;
+    Hely oktato;
 
     vector<int> kijarat; /// ???
+    vector<int> szomszedok;
 
+    void loadSzobaFromFile(string file){
+        ifstream inpF("szobak/"+file+".txt");
+        inpF>>nev;
+        int sikidomCnt = -1;
+        inpF>>sikidomCnt;
+        for (int i=0; i<sikidomCnt; i++){
+            int szakaszCnt = -1;
+            inpF>>szakaszCnt;
+            vector<vec2> csucsok;
+            for (int j=0; j<szakaszCnt; j++){
+                vec2 temp;
+                inpF>>temp.x>>temp.y;
+                csucsok.push_back(temp);
+            }
+            Sikidom oldalak;
+            for (int j=0; j<csucsok.size(); j++){
+                Szakasz temp(csucsok[j],csucsok[(j+1)%csucsok.size()]);
+                oldalak.szakaszok.push_back(temp);
+            }
+            alaprajz.push_back(oldalak);
+        }
+        int ajtoCnt = -1;
+        inpF>>ajtoCnt;
+        for (int j=0; j<ajtoCnt; j++){
+            int kijaratT = -1;
+            inpF>>kijaratT;
+            kijarat.push_back(kijaratT);
+        }
+        int diakCnt = -1;
+        inpF>>diakCnt;
+        for (int j=0; j<diakCnt; j++){
+            Hely diakH;
+            inpF>>diakH.szobaPoz.x>>diakH.szobaPoz.y>>diakH.ertek;
+            diakok.push_back(diakH);
+        }
+        int oktatoCnt = -1;
+        inpF>>oktatoCnt;
+        for (int j=0; j<oktatoCnt; j++){
+            inpF>>oktato.szobaPoz.x>>oktato.szobaPoz.y>>oktato.ertek;
+        }
+        inpF>>atjarhato;
+        inpF.close();
+    }
 
+    void rotateSzoba(float deg, vec2 around){
+        for (int i=0; i<alaprajz.size();i++){
+            for (int j=0; j<alaprajz[i].szakaszok.size(); j++){
+                vec2 P1 = alaprajz[i].szakaszok[j].p1;
+                vec2 P2 = alaprajz[i].szakaszok[j].p2;
+                P1-=around; P2-=around;
+                P1.rotate(deg); P2.rotate(deg);
+                P1+=around; P2+=around;
+                alaprajz[i].szakaszok[j].p1=P1;
+                alaprajz[i].szakaszok[j].p2=P2;
+            }
+        }
+    }
+
+    void moveSzoba(vec2 way){
+        for (int i=0; i<alaprajz.size();i++){
+            for (int j=0; j<alaprajz[i].szakaszok.size(); j++){
+                alaprajz[i].szakaszok[j].p1+=way;
+                alaprajz[i].szakaszok[j].p2+=way;
+            }
+        }
+    }
+
+    void createVilag(){
+        navigaciosTerSzele.alaprajz=alaprajz;
+        navigaciosTerSzele.ajtok=kijarat;
+        navigaciosTerSzele.diakok=diakok;
+        navigaciosTerSzele.oktato=oktato;
+    }
+
+    void draw(SDL_Renderer &renderer, Kamera kamera){
+
+        for (int i=0; i<alaprajz.size(); i++){
+            for (int j=0; j<alaprajz[i].szakaszok.size(); j++){
+                lineRGBA(&renderer,
+                         kamera.valosLekepezese(alaprajz[i].szakaszok[j].p1).x,kamera.valosLekepezese(alaprajz[i].szakaszok[j].p1).y,
+                         kamera.valosLekepezese(alaprajz[i].szakaszok[j].p2).x,kamera.valosLekepezese(alaprajz[i].szakaszok[j].p2).y,
+                         52,240,120,255);
+                filledCircleRGBA(&renderer,
+                         kamera.valosLekepezese(alaprajz[i].szakaszok[j].p1).x,kamera.valosLekepezese(alaprajz[i].szakaszok[j].p1).y, 5,
+                         60,25,40,255);
+            }
+        }
+
+        /*
+        for (int i=0; i<ujsikidom.szakaszok.size(); i++){
+            lineRGBA(&renderer,
+                     kamera.valosLekepezese(ujsikidom.szakaszok[i].p1).x,kamera.valosLekepezese(ujsikidom.szakaszok[i].p1).y,
+                     kamera.valosLekepezese(ujsikidom.szakaszok[i].p2).x,kamera.valosLekepezese(ujsikidom.szakaszok[i].p2).y,
+                     52,240,120,255);
+            filledCircleRGBA(&renderer,
+                     kamera.valosLekepezese(ujsikidom.szakaszok[i].p1).x,kamera.valosLekepezese(ujsikidom.szakaszok[i].p1).y, 5,
+                     60,25,40,255);
+        }
+
+        for (int i=0; i<alaprajzhozTartozo.size(); i++){
+            for (int j=0; j<alaprajzhozTartozo[i].szakaszok.size(); j++){
+                lineRGBA(&renderer,
+                         kamera.valosLekepezese(alaprajzhozTartozo[i].szakaszok[j].p1).x,kamera.valosLekepezese(alaprajzhozTartozo[i].szakaszok[j].p1).y,
+                         kamera.valosLekepezese(alaprajzhozTartozo[i].szakaszok[j].p2).x,kamera.valosLekepezese(alaprajzhozTartozo[i].szakaszok[j].p2).y,
+                         150,215,100,255);
+                filledCircleRGBA(&renderer,
+                         kamera.valosLekepezese(alaprajzhozTartozo[i].szakaszok[j].p1).x,kamera.valosLekepezese(alaprajzhozTartozo[i].szakaszok[j].p1).y, 5,
+                         60,160,128,200);
+            }
+        }
+        */
+        navigaciosTerSzele.draw(renderer,kamera);
+    }
 };
 
 struct Emelet{
     vector<Szoba> szobak;
-    vector<pair<int,int>> szomszedosSzobak;
+    vector<vector<int>> szomszedosSzobak;
+    vector<vector<int>> szobakSzomszedjai;
+
+    Emelet(){
+        szobak.resize(3);
+        szobakSzomszedjai.resize(3);
+        szobak[0].loadSzobaFromFile("liftLepcso");
+        szobak[1].loadSzobaFromFile("liftFolyoso");
+        szobak[2].loadSzobaFromFile("B410");
+        szobakSzomszedjai[0].push_back(1);
+        szobakSzomszedjai[1].push_back(0);
+        szobakSzomszedjai[1].push_back(2);
+        szobakSzomszedjai[2].push_back(1);
+        for (int i=0; i<szobak.size(); i++){
+            szobak[i].createVilag();
+        }
+    }
+
+    void draw(SDL_Renderer &renderer, Kamera kamera){
+        for (int i=0; i<szobak.size(); i++)
+            szobak[i].draw(renderer,kamera);
+    }
 };
 
 /// megjelenítéshez szükséges globális változók
@@ -204,9 +420,12 @@ Kamera kamera;
 //Palya palya;
 Vilag vilag;
 Palya palya(true);
+Szoba szoba;
+Emelet emelet;
 
 bool folyamatban = false;
 float f1 = 1.f;
+int szerkesztoMod = 0; /// 0 csúcsok, 1 diákok, 2 oktató
 
 /// eseméyneket, bemeneteket itt kezelem le
 void EventHandle(SDL_Event ev){
@@ -270,6 +489,36 @@ void EventHandle(SDL_Event ev){
             folyamatban=true;
             f1=-1;
         }
+        if (ev.key.keysym.sym == SDLK_q){
+            szerkesztoMod++;
+            szerkesztoMod=szerkesztoMod%4;
+            cout<<"szerkesztoMod: "<<szerkesztoMod<<endl;
+        }
+        if (ev.key.keysym.sym == SDLK_o){
+            vilag.atjarhato=!vilag.atjarhato;
+            cout<<"vilag.atjarhato: "<<(bool)vilag.atjarhato<<true<<endl;
+        }
+        if (ev.key.keysym.sym == SDLK_l){
+            string name; cout<<"Betoltendo szoba: "; cin>>name;
+            szoba.loadSzobaFromFile(name);
+            szoba.createVilag();
+            cout<<"loadSzobaFromFile: "<<endl;
+        }
+
+        if (ev.key.keysym.sym == SDLK_m){
+            if (szerkesztoMod==1)
+                vilag.diakok.pop_back();
+            if (szerkesztoMod==2)
+                vilag.OktatoTorlese();
+            if (szerkesztoMod==3)
+                vilag.ajtok.pop_back();
+            cout<<"szerkesztoMod: "<<szerkesztoMod<<endl;
+        }
+        if (ev.key.keysym.sym == SDLK_n){
+            vilag.save();
+            cout<<"vilag.save(): "<<endl;
+        }
+
 
         if (ev.key.keysym.sym == SDLK_r){ /// pálya reset
             clock_t t = clock();
@@ -309,29 +558,39 @@ void EventHandle(SDL_Event ev){
     }
 
     if (ev.type==SDL_MOUSEBUTTONDOWN){
-        if (ev.button.button == 1){
-            if (vilag.elsoPont){
-                vilag.elsoPont=false;
-                vilag.ujSikidomTempPont=kamera.kepiLekepzese(vec2(ev.button.x,ev.button.y));
-            } else {
-                if (vilag.ujsikidom.szakaszok.size()==0){
-                    Szakasz uj(vilag.ujSikidomTempPont,kamera.kepiLekepzese(vec2(ev.button.x,ev.button.y)));
-                    vilag.ujsikidom.szakaszok.push_back(uj);
-                }
-                else{
-                    Szakasz uj(vilag.ujsikidom.szakaszok[vilag.ujsikidom.szakaszok.size()-1].p2,kamera.kepiLekepzese(vec2(ev.button.x,ev.button.y)));
-                    vilag.ujsikidom.szakaszok.push_back(uj);
+        if (szerkesztoMod==0){
+            if (ev.button.button == 1){
+                if (vilag.elsoPont){
+                    vilag.elsoPont=false;
+                    vilag.ujSikidomTempPont=kamera.kepiLekepzese(vec2(ev.button.x,ev.button.y));
+                } else {
+                    if (vilag.ujsikidom.szakaszok.size()==0){
+                        Szakasz uj(vilag.ujSikidomTempPont,kamera.kepiLekepzese(vec2(ev.button.x,ev.button.y)));
+                        vilag.ujsikidom.szakaszok.push_back(uj);
+                    }
+                    else{
+                        Szakasz uj(vilag.ujsikidom.szakaszok[vilag.ujsikidom.szakaszok.size()-1].p2,kamera.kepiLekepzese(vec2(ev.button.x,ev.button.y)));
+                        vilag.ujsikidom.szakaszok.push_back(uj);
+                    }
                 }
             }
-        }
-        if (ev.button.button == 2){
-            vilag.ujSikidomReset();
-        }
-        if (ev.button.button == 3){
-            vilag.ujsikidom.szakaszok.push_back(
-                Szakasz(vilag.ujsikidom.szakaszok[vilag.ujsikidom.szakaszok.size()-1].p2,vilag.ujsikidom.szakaszok[0].p1));
-            vilag.alaprajz.push_back(vilag.ujsikidom);
-            vilag.ujSikidomReset();
+            if (ev.button.button == 2){
+                vilag.ujSikidomReset();
+            }
+            if (ev.button.button == 3){
+                vilag.ujsikidom.szakaszok.push_back(
+                    Szakasz(vilag.ujsikidom.szakaszok[vilag.ujsikidom.szakaszok.size()-1].p2,vilag.ujsikidom.szakaszok[0].p1));
+                vilag.alaprajz.push_back(vilag.ujsikidom);
+                vilag.ujSikidomReset();
+            }
+        } else if (szerkesztoMod==1){
+            Hely temp; temp.szobaPoz=vec2(kamera.kepiLekepzese(vec2(ev.button.x,ev.button.y)));
+            vilag.diakok.push_back(temp);
+        } else if (szerkesztoMod==2){
+            Hely temp; temp.szobaPoz=vec2(kamera.kepiLekepzese(vec2(ev.button.x,ev.button.y)));
+            vilag.oktato=temp;
+        } else if (szerkesztoMod==3){
+            vilag.SetAjto(kamera.kepiLekepzese(vec2(ev.button.x,ev.button.y)));
         }
         cout<<ev.button.type<<endl;
         cout<<(int)ev.button.button<<endl;
@@ -358,6 +617,9 @@ void simulation(SDL_Window &window, SDL_Renderer &renderer){
     bool frame=true;
     clock_t dt = 0;
 
+    ofstream F("szobak/a.txt");
+    F<<"ALMA";
+    F.close();
 
     /// megjelenítési és eseménykezelő ciklus
     while(!stop){
@@ -398,6 +660,8 @@ void simulation(SDL_Window &window, SDL_Renderer &renderer){
             }
             palya.draw(renderer,kamera); /// kirajzolja a pályát
             vilag.draw(renderer,kamera);
+            szoba.draw(renderer,kamera);
+            emelet.draw(renderer,kamera);
             SDL_RenderPresent(&renderer); /// meg is jeleníti
             //megjelenites(renderer,window,palya,step_cnt);
         }

@@ -21,7 +21,7 @@
 #include <system_error>
 #include <windows.h>
 #include <stdlib.h>
-
+#include <fstream>
 
 #define SZELES 480
 #define MAGAS 480

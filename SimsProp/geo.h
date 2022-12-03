@@ -19,7 +19,10 @@ struct Pont{
 
 
 
-
+float Heron(float a, float b, float c){
+    float s = (a+b+c)/2;
+    return sqrt(s*(s-a)*(s-b)*(s-c));
+}
 
 
 /// két pontot tartalmaz
@@ -57,6 +60,24 @@ struct Szakasz{
         float c = p1.dist(p2); /// a szakasz hossza
         float x = pow((b*b+c*c-a*a)/(2*c),2) - b*b; /// Pithagoras-tétel felhasználásával
         x*=-1.f;
+        return sqrt(x); /// a pont távolsága
+    }
+
+    float vec2TavR(vec2 p){ /// szakasztól, mint egyenestől a pont távolsága
+        /// saját matek
+        float a = p1.dist(p); /// p1 és a pont távolsága
+        float b = p2.dist(p); /// p2 és a p távolsága
+        float c = p1.dist(p2); /// a szakasz hossza
+        float x = pow((b*b+c*c-a*a)/(2*c),2) - b*b; /// Pithagoras-tétel felhasználásával
+        x*=-1.f;
+        x=sqrt(x);
+        if (a>b){
+            float t = a;
+            a=b;
+            b=t;
+        }
+        if (a*a+c*c<b*b)
+            return a;
         return sqrt(x); /// a pont távolsága
     }
 
@@ -386,11 +407,11 @@ struct Palya{
     float sizeX = 400, sizeY = 400;
     float posX = 0, posY = 0;
     int sok = 0;
-    vector<Sikidom> sikidomok;
-    vector<Sikidom> navMesh;
-    vector<vector<Szakasz>> belsoAtlok;
-    vector<Szakasz> BAszakasz;
-    vector<Szakasz> szakaszBA;
+    vector<Sikidom> sikidomok; /// határoló síkidomok
+    vector<Sikidom> navMesh;  /// bejárható tér
+    vector<vector<Szakasz>> belsoAtlok; /// síkidomok belső átlói
+    vector<Szakasz> BAszakasz; /// számításhoz szükséges szakaszok
+    vector<Szakasz> szakaszBA; /// számításhoz szükséges szakaszok
 
     Palya(bool ures = true){
         if (ures)
@@ -1446,8 +1467,10 @@ struct Palya{
 
     /// pálya megjelenítése
     void draw(SDL_Renderer &renderer, Kamera kamera){
+        /*
         boxRGBA(&renderer,kamera.valosLekepezese(vec2(posX,0)).x,kamera.valosLekepezese(vec2(0,posY)).y,
                 kamera.valosLekepezese(vec2(posX+sizeX,0)).x,kamera.valosLekepezese(vec2(0,posY+sizeY)).y,100,100,100,255);
+        */
         for (int i=0; i<sikidomok.size(); i++){
             sikidomok[i].draw(renderer,kamera);
         }
