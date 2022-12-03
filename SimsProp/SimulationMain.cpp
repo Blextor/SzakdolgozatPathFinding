@@ -356,6 +356,9 @@ struct Szoba{
         navigaciosTerSzele.ajtok=kijarat;
         navigaciosTerSzele.diakok=diakok;
         navigaciosTerSzele.oktato=oktato;
+        navigaciosTerSzele.alaprajzhozTartozoLetrehozasa();
+        navigaciosTer.sikidomok=navigaciosTerSzele.alaprajzhozTartozo;
+        navigaciosTer.bakeNavMesh();
     }
 
     void draw(SDL_Renderer &renderer, Kamera kamera){
@@ -396,26 +399,128 @@ struct Szoba{
         }
         */
         navigaciosTerSzele.draw(renderer,kamera);
+        navigaciosTer.draw(renderer,kamera);
     }
 };
 
 struct Emelet{
     vector<Szoba> szobak;
     vector<vector<int>> szomszedosSzobak;
-    vector<vector<int>> szobakSzomszedjai;
+    vector<vector<int>> szobakSzomszedjai; /// másik szobaIndexek
+    vector<vector<int>> szobakSzomszedjainakAjtoi; /// másik szobába vezető ajtók indexe
+
+    Vilag egeszV;
+    Palya pegesz;
+
+    vector<Szakasz> getSzobaHatar(int szobaIdx, int fromIdx=-1){ /// lehetőleg az ajtók ne legyenek a síkodomnak a szakaszlistájának elején és végén is
+        vector<Szakasz> ret;
+        vec2 startPont;
+        int startIdx = 0;
+        vec2 endPont;
+        cout<<"a"<<endl;
+        if (fromIdx==-1){
+            startPont=szobak[szobaIdx].alaprajz[0].szakaszok[0].p1;
+            startIdx = 0;
+            endPont = startPont;
+            cout<<"b"<<endl;
+        } else {
+            int idx = -1;
+            for (int i=0; i<szobakSzomszedjai[szobaIdx].size(); i++){
+                if (szobakSzomszedjai[szobaIdx][i]==fromIdx){
+                    idx=i;
+                    break;
+                }
+            }
+            cout<<"c"<<endl;
+            int szIdx = (szobak[szobaIdx].kijarat[szobakSzomszedjainakAjtoi[szobaIdx][idx]]+2);
+            int modulo = szobak[szobaIdx].alaprajz[0].szakaszok.size();
+            startPont=szobak[szobaIdx].alaprajz[0].szakaszok[szIdx%modulo].p1;
+            endPont=szobak[szobaIdx].alaprajz[0].szakaszok[(szIdx+modulo-4)%modulo].p1;
+            startIdx = (szIdx)%modulo;
+        }
+        int modulo = szobak[szobaIdx].alaprajz[0].szakaszok.size();
+
+        cout<<"d"<<endl;
+        for (int i=startIdx; i<startIdx+modulo; i++){
+
+            cout<<"e "<<i<<endl;
+            bool ajto = false;
+            int masikSzobaIdx = 1;
+            Szakasz kovetkezoSzakasz;
+            for (int j=0; j<szobakSzomszedjainakAjtoi[szobaIdx].size(); j++){
+                cout<<"e2"<<endl;
+                cout<<i<<" "<<szobak[szobaIdx].kijarat[szobakSzomszedjainakAjtoi[szobaIdx][j]]<<endl;
+                if (i==szobak[szobaIdx].kijarat[szobakSzomszedjainakAjtoi[szobaIdx][j]]){
+                    cout<<"mé"<<endl;
+                    ajto = true;
+                    masikSzobaIdx = szobakSzomszedjai[szobaIdx][j];
+                    kovetkezoSzakasz = szobak[szobaIdx].alaprajz[0].szakaszok[(i+2)%modulo];
+                    i++;
+                    break;
+                }
+            }
+            cout<<"f"<<endl;
+            if (ajto){
+                cout<<"ret.size() "<<ret.size()<<endl;
+                if (ret.size()!=0)
+                    ret.pop_back();
+                cout<<"i"<<endl;
+                vector<Szakasz> temp = getSzobaHatar(masikSzobaIdx,szobaIdx);
+                cout<<"j "<<ret.size()<<" "<<temp.size()<<endl;
+                if (ret.size()!=0){
+
+                    ret.push_back(Szakasz(ret.back().p2,temp[0].p1));
+                }
+                ret.insert(ret.end(),temp.begin(),temp.end());
+                ret.push_back(Szakasz(temp[temp.size()-1].p2,kovetkezoSzakasz.p1));
+                cout<<"o"<<endl;
+            } else {
+                cout<<"f2"<<endl;
+                ret.push_back(szobak[szobaIdx].alaprajz[0].szakaszok[i%modulo]);
+            }
+            cout<<"g"<<endl;
+            if (szobak[szobaIdx].alaprajz[0].szakaszok[i%modulo].p1 == endPont && i!=startIdx){
+                cout<<"ZZZ"<<endl;
+                break;
+            }
+        }
+        cout<<"h"<<endl;
+        return ret;
+    }
 
     Emelet(){
         szobak.resize(3);
         szobakSzomszedjai.resize(3);
+        szobakSzomszedjainakAjtoi.resize(3);
         szobak[0].loadSzobaFromFile("liftLepcso");
         szobak[1].loadSzobaFromFile("liftFolyoso");
         szobak[2].loadSzobaFromFile("B410");
         szobakSzomszedjai[0].push_back(1);
+        szobakSzomszedjainakAjtoi[0].push_back(0);
         szobakSzomszedjai[1].push_back(0);
+        szobakSzomszedjainakAjtoi[1].push_back(3);
         szobakSzomszedjai[1].push_back(2);
+        szobakSzomszedjainakAjtoi[1].push_back(1);
         szobakSzomszedjai[2].push_back(1);
+        szobakSzomszedjainakAjtoi[2].push_back(0);
         szobak[1].getIntrest(3,szobak[0],0);
         szobak[2].getIntrest(0,szobak[1],1);
+        cout<<"ALMA"<<endl;
+        cout<<-4<<" "<<(-4%3)<<endl;
+
+        vector<Szakasz> temp = getSzobaHatar(0);
+        cout<<"balma"<<endl;
+        egeszV.alaprajz.resize(1);
+        egeszV.alaprajz[0].szakaszok=temp;
+        cout<<"calma"<<endl;
+        for (int i=0; i<szobak.size(); i++){
+            for (int j=1; j<szobak[i].alaprajz.size(); j++){
+                egeszV.alaprajz.push_back(szobak[i].alaprajz[j]);
+            }
+        }
+        egeszV.alaprajzhozTartozoLetrehozasa();
+        pegesz.sikidomok=egeszV.alaprajzhozTartozo;
+        //pegesz.bakeNavMesh();
 
         for (int i=0; i<szobak.size(); i++){
             szobak[i].createVilag();
@@ -423,6 +528,8 @@ struct Emelet{
     }
 
     void draw(SDL_Renderer &renderer, Kamera kamera){
+        egeszV.draw(renderer,kamera);
+        pegesz.draw(renderer,kamera);
         for (int i=0; i<szobak.size(); i++)
             szobak[i].draw(renderer,kamera);
     }
