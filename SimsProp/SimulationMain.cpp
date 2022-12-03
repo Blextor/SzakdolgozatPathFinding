@@ -337,9 +337,21 @@ struct Szoba{
                 alaprajz[i].szakaszok[j].p2+=way;
             }
         }
+        for (int i=0; i<diakok.size(); i++)
+            diakok[i].szobaPoz+=way;
+        oktato.szobaPoz+=way;
+    }
+
+    void getIntrest(int ajto1Idx, Szoba szulo, int ajto2Idx){
+        Szakasz ajto1 = alaprajz[0].szakaszok[kijarat[ajto1Idx]];
+        Szakasz ajto2 = szulo.alaprajz[0].szakaszok[szulo.kijarat[ajto2Idx]];
+        vec2 a = ajto2.p2 + ajto2.p1; a /= 2;
+        vec2 b = ajto1.p2 + ajto1.p1; b /= 2;
+        moveSzoba(a-b);
     }
 
     void createVilag(){
+        navigaciosTerSzele = Vilag();
         navigaciosTerSzele.alaprajz=alaprajz;
         navigaciosTerSzele.ajtok=kijarat;
         navigaciosTerSzele.diakok=diakok;
@@ -402,6 +414,9 @@ struct Emelet{
         szobakSzomszedjai[1].push_back(0);
         szobakSzomszedjai[1].push_back(2);
         szobakSzomszedjai[2].push_back(1);
+        szobak[1].getIntrest(3,szobak[0],0);
+        szobak[2].getIntrest(0,szobak[1],1);
+
         for (int i=0; i<szobak.size(); i++){
             szobak[i].createVilag();
         }
@@ -658,6 +673,7 @@ void simulation(SDL_Window &window, SDL_Renderer &renderer){
                     vilag.agentRadius=0;
                 vilag.alaprajzhozTartozoLetrehozasa();
             }
+            filledCircleRGBA(&renderer,kamera.valosLekepezese(vec2(0,0)).x,kamera.valosLekepezese(vec2(0,0)).y,10,255,255,255,255);
             palya.draw(renderer,kamera); /// kirajzolja a pályát
             vilag.draw(renderer,kamera);
             szoba.draw(renderer,kamera);
