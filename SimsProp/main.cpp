@@ -7,6 +7,7 @@ using namespace std;
 
 int main( int argc, char * argv[] )
 {
+    clock_t t = clock();
     srand(time(NULL));
     SDL_Window *window;
     SDL_Renderer *renderer;
@@ -15,6 +16,7 @@ int main( int argc, char * argv[] )
     SDL_RenderClear( renderer );
     SDL_RenderPresent( renderer );
 
+    /*
     vec3 P0(0,0,0);
     vec3 P1(1,0,0);
     vec3 Q0(3,1,0);
@@ -29,7 +31,8 @@ int main( int argc, char * argv[] )
     bool Dret = false;
     DistanceSegments2(p0,p1,q0,q1,res,s,t,closest2,Dret);
     cout<<res<<", s: "<<s<<", t:"<<t<<", "<<closest2[0].x<<" "<<closest2[1].y<<", "<<closest2[1].x<<" "<<closest2[1].y<<endl;
-
+    */
+    cout<<"mainTime: "<<clock()-t<<endl;
     simulation( *window, *renderer);
     return 0;
 }

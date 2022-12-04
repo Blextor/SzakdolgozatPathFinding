@@ -1471,6 +1471,7 @@ struct Palya{
         boxRGBA(&renderer,kamera.valosLekepezese(vec2(posX,0)).x,kamera.valosLekepezese(vec2(0,posY)).y,
                 kamera.valosLekepezese(vec2(posX+sizeX,0)).x,kamera.valosLekepezese(vec2(0,posY+sizeY)).y,100,100,100,255);
         */
+
         for (int i=0; i<sikidomok.size(); i++){
             sikidomok[i].draw(renderer,kamera);
         }
@@ -1479,9 +1480,10 @@ struct Palya{
                 continue;
             navMesh[i].draw(renderer,kamera,true);
         }
+
         for (int i=0; i<belsoAtlok.size(); i++){
             for (int j=0; j<belsoAtlok[i].size(); j++){
-                belsoAtlok[i][j].draw(renderer,kamera);
+                belsoAtlok[i][j].draw(renderer,kamera,10,20,255);
             }
         }
         for (int i=0; i<BAszakasz.size(); i++){
