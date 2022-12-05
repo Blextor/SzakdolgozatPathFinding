@@ -207,9 +207,11 @@ struct Vilag{
                          kamera.valosLekepezese(alaprajz[i].szakaszok[j].p1).x,kamera.valosLekepezese(alaprajz[i].szakaszok[j].p1).y,
                          kamera.valosLekepezese(alaprajz[i].szakaszok[j].p2).x,kamera.valosLekepezese(alaprajz[i].szakaszok[j].p2).y,
                          r,240,100+r,255);
+                /*
                 filledCircleRGBA(&renderer,
                          kamera.valosLekepezese(alaprajz[i].szakaszok[j].p1).x,kamera.valosLekepezese(alaprajz[i].szakaszok[j].p1).y, 5,
                          60,25,40,255);
+                */
             }
         }
 
@@ -580,7 +582,7 @@ struct Emelet{
 
     Emelet(){
         clock_t t=clock();
-        int szCnt = 6;
+        int szCnt = 11;
         szobak.resize(szCnt);
         szobakSzomszedjai.resize(szCnt);
         szobakSzomszedjainakAjtoi.resize(szCnt);
@@ -590,6 +592,11 @@ struct Emelet{
         szobak[3].loadSzobaFromFile("Gfolyoso");
         szobak[4].loadSzobaFromFile("atriumFolyoso");
         szobak[5].loadSzobaFromFile("B413");
+        szobak[6].loadSzobaFromFile("laborFolyoso");
+        szobak[7].loadSzobaFromFile("L408");
+        szobak[8].loadSzobaFromFile("L407");
+        szobak[9].loadSzobaFromFile("L406");
+        szobak[10].loadSzobaFromFile("L405_5");
         szobakSzomszedjai[0].push_back(1);
         szobakSzomszedjainakAjtoi[0].push_back(0);
         szobakSzomszedjai[1].push_back(0);
@@ -610,11 +617,42 @@ struct Emelet{
         szobakSzomszedjainakAjtoi[4].push_back(2);
         szobakSzomszedjai[5].push_back(4);
         szobakSzomszedjainakAjtoi[5].push_back(0);
+
+        szobakSzomszedjai[3].push_back(6);
+        szobakSzomszedjainakAjtoi[3].push_back(2);
+        szobakSzomszedjai[6].push_back(3);
+        szobakSzomszedjainakAjtoi[6].push_back(0);
+
+        szobakSzomszedjai[6].push_back(7);
+        szobakSzomszedjainakAjtoi[6].push_back(1);
+        szobakSzomszedjai[7].push_back(6);
+        szobakSzomszedjainakAjtoi[7].push_back(0);
+
+        szobakSzomszedjai[6].push_back(8);
+        szobakSzomszedjainakAjtoi[6].push_back(2);
+        szobakSzomszedjai[8].push_back(6);
+        szobakSzomszedjainakAjtoi[8].push_back(0);
+
+        szobakSzomszedjai[6].push_back(9);
+        szobakSzomszedjainakAjtoi[6].push_back(3);
+        szobakSzomszedjai[9].push_back(6);
+        szobakSzomszedjainakAjtoi[9].push_back(0);
+
+        szobakSzomszedjai[6].push_back(10);
+        szobakSzomszedjainakAjtoi[6].push_back(4);
+        szobakSzomszedjai[10].push_back(6);
+        szobakSzomszedjainakAjtoi[10].push_back(0);
+
         szobak[1].getIntrest(3,szobak[0],0);
         szobak[2].getIntrest(0,szobak[1],1);
         szobak[3].getIntrest(0,szobak[1],0);
         szobak[4].getIntrest(0,szobak[1],2);
         szobak[5].getIntrest(0,szobak[4],2);
+        szobak[6].getIntrest(0,szobak[3],2);
+        szobak[7].getIntrest(0,szobak[6],1);
+        szobak[8].getIntrest(0,szobak[6],2);
+        szobak[9].getIntrest(0,szobak[6],3);
+        szobak[10].getIntrest(0,szobak[6],4);
 
         agentSizes.clear();
         for (float i=10.f; i<=15.f; i+=0.5f){
@@ -622,6 +660,7 @@ struct Emelet{
         }
 
         for (int i=0; i<szobak.size(); i++){
+            cout<<"create: "<<i<<endl;
             szobak[i].createVilag(agentSizes);
         }
 

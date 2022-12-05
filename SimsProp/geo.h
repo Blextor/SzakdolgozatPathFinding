@@ -310,11 +310,13 @@ struct Sikidom{
                 kamera.valosLekepezese(szakaszok[i].p2).x,kamera.valosLekepezese(szakaszok[i].p2).y,
                      r,g,b,255);
         }
+        /*
         for (int i=0; i<szakaszok.size(); i++){
             filledCircleRGBA(&renderer,
                 kamera.valosLekepezese(szakaszok[i].p1).x,kamera.valosLekepezese(szakaszok[i].p1).y,
                              5,r,g,130,255);
         }
+        */
     }
 
 
@@ -765,6 +767,17 @@ struct Palya{
                                 break;
                             }
                             if (marVan)
+                                continue;
+                            Haromszog har(cs[0],cs[1],cs[2]);
+                            int csCnt = 0;
+                            for (int i=0; i<csucsok.size(); i++){
+                                if (har.benneVanAPont(csucsok[i])){
+                                    csCnt++;
+                                    if (csCnt>3)
+                                        break;
+                                }
+                            }
+                            if (csCnt>3)
                                 continue;
                             /*
                             for (int l=0; l<3; l++){
