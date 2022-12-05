@@ -1,5 +1,6 @@
 #include "common.h"
 #include "vec3.h"
+//#include "geo.h"
 
 using namespace std;
 
@@ -15,6 +16,17 @@ int main( int argc, char * argv[] )
     SDL_SetRenderDrawColor( renderer, 0, 0, 0, 255 );
     SDL_RenderClear( renderer );
     SDL_RenderPresent( renderer );
+
+    /*
+    cout<<cos(0)<<" "<<cos(90)<<" "<<cos(M_PI)<<endl;
+
+    for (float i=0; i<360; i++){
+        float szog = i*M_PI*2.f/360.f;
+        vec2 temp(cos(szog),sin(szog));
+        cout<<"( "<<cos(szog)<<", "<<sin(szog)<<" ): ";
+        cout<<vec2ToDeg(temp)<<endl;
+    }
+    */
 
     /*
     vec3 P0(0,0,0);

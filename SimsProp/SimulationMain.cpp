@@ -5,6 +5,14 @@
 
 using namespace std;
 
+bool drawFalak = true;
+bool drawAjtok = false;
+bool drawNavMesh = false;
+bool drawPoziciok = false;
+
+
+
+
 struct Hely{
     vec2 szobaPoz;
     vec2 valosPoz;
@@ -187,12 +195,13 @@ struct Vilag{
         ///alaprajzhozTartozo=alaprajz;
     }
 
-    void draw(SDL_Renderer &renderer, Kamera kamera){
+    void draw(SDL_Renderer &renderer, Kamera kamera,bool alaprajzDraw=true){
 
         int r = 52;
         if (atjarhato)
             r=152;
-        for (int i=0; i<alaprajz.size(); i++){
+
+        for (int i=0; i<alaprajz.size() && alaprajzDraw; i++){
             for (int j=0; j<alaprajz[i].szakaszok.size(); j++){
                 lineRGBA(&renderer,
                          kamera.valosLekepezese(alaprajz[i].szakaszok[j].p1).x,kamera.valosLekepezese(alaprajz[i].szakaszok[j].p1).y,
@@ -204,7 +213,7 @@ struct Vilag{
             }
         }
 
-
+        /*
         for (int i=0; i<ujsikidom.szakaszok.size(); i++){
             lineRGBA(&renderer,
                      kamera.valosLekepezese(ujsikidom.szakaszok[i].p1).x,kamera.valosLekepezese(ujsikidom.szakaszok[i].p1).y,
@@ -214,7 +223,9 @@ struct Vilag{
                      kamera.valosLekepezese(ujsikidom.szakaszok[i].p1).x,kamera.valosLekepezese(ujsikidom.szakaszok[i].p1).y, 5,
                      60,25,40,255);
         }
+        */
 
+        /*
         for (int i=0; i<alaprajzhozTartozo.size(); i++){
             for (int j=0; j<alaprajzhozTartozo[i].szakaszok.size(); j++){
                 lineRGBA(&renderer,
@@ -226,21 +237,26 @@ struct Vilag{
                          60,160,128,200);
             }
         }
-
-        for (int i=0; i<diakok.size(); i++){
-            filledCircleRGBA(&renderer,
-                     kamera.valosLekepezese(diakok[i].szobaPoz).x,kamera.valosLekepezese(diakok[i].szobaPoz).y, agentRadius*SZELES/kamera.zoom,
-                     150,150,255,200);
+        */
+        if (drawPoziciok){
+            for (int i=0; i<diakok.size(); i++){
+                filledCircleRGBA(&renderer,
+                         kamera.valosLekepezese(diakok[i].szobaPoz).x,kamera.valosLekepezese(diakok[i].szobaPoz).y, agentRadius*SZELES/kamera.zoom,
+                         150,150,255,200);
+            }
+            if (!atjarhato)
+                filledCircleRGBA(&renderer,
+                         kamera.valosLekepezese(oktato.szobaPoz).x,kamera.valosLekepezese(oktato.szobaPoz).y, agentRadius*SZELES/kamera.zoom,
+                         255,150,100,200);
         }
-        filledCircleRGBA(&renderer,
-                 kamera.valosLekepezese(oktato.szobaPoz).x,kamera.valosLekepezese(oktato.szobaPoz).y, agentRadius,
-                 255,150,100,200);
+        /*
         for (int i=0; i<ajtok.size(); i++){
             lineRGBA(&renderer,
                      kamera.valosLekepezese(alaprajz[0].szakaszok[ajtok[i]].p1).x,kamera.valosLekepezese(alaprajz[0].szakaszok[ajtok[i]].p1).y,
                      kamera.valosLekepezese(alaprajz[0].szakaszok[ajtok[i]].p2).x,kamera.valosLekepezese(alaprajz[0].szakaszok[ajtok[i]].p2).y,
                      255,255,0,255);
         }
+        */
     }
 };
 
@@ -359,15 +375,19 @@ struct Szoba{
             navigaciosTerSzeleAS[i].ajtok=kijarat;
             navigaciosTerSzeleAS[i].diakok=diakok;
             navigaciosTerSzeleAS[i].oktato=oktato;
+            navigaciosTerSzeleAS[i].agentRadius=agentSizes[i];
             navigaciosTerSzeleAS[i].alaprajzhozTartozoLetrehozasa();
+            navigaciosTerSzeleAS[i].atjarhato=atjarhato;
             navigaciosTerAS[i].sikidomok=navigaciosTerSzeleAS[i].alaprajzhozTartozo;
-            navigaciosTerAS[i].bakeNavMesh();
-            navigaciosTerAS[i].bakeAtloNavMesh();
+            navigaciosTerAS[i].bakeNavMesh2();
+            //navigaciosTerAS[i].bakeAtloNavMesh();
+            //navigaciosTerAS[i].bakeKulsoNavMesh2(false);
         }
     }
 
-    void draw(SDL_Renderer &renderer, Kamera kamera){
+    void draw(SDL_Renderer &renderer, Kamera kamera, int agentSP = 0){
 
+        /**
         for (int i=0; i<alaprajz.size(); i++){
             for (int j=0; j<alaprajz[i].szakaszok.size(); j++){
                 lineRGBA(&renderer,
@@ -379,6 +399,7 @@ struct Szoba{
                          60,25,40,255);
             }
         }
+        */
 
         /*
         for (int i=0; i<ujsikidom.szakaszok.size(); i++){
@@ -403,8 +424,9 @@ struct Szoba{
             }
         }
         */
-        navigaciosTerSzeleAS[0].draw(renderer,kamera);
-        navigaciosTerAS[0].draw(renderer,kamera);
+        navigaciosTerSzeleAS[agentSP].draw(renderer,kamera,false);
+        if (drawNavMesh)
+            navigaciosTerAS[agentSP].draw(renderer,kamera);
     }
 };
 
@@ -418,7 +440,7 @@ struct Emelet{
     vector<vector<int>> szobakSzomszedjai; /// másik szobaIndexek
     vector<vector<int>> szobakSzomszedjainakAjtoi; /// másik szobába vezető ajtók indexe
 
-
+    int agentSP = 0;
 
     vector<float> agentSizes;
     vector<Vilag> egeszVaS;
@@ -479,7 +501,7 @@ struct Emelet{
         }
     }
 
-    bool gSZDEBUG = false;
+    bool gSZDEBUG = true;
     vector<Szakasz> getSzobaHatar(int szobaIdx, int fromIdx=-1){ /// lehetőleg az ajtók ne legyenek a síkodomnak a szakaszlistájának elején és végén is
         vector<Szakasz> ret;
         vec2 startPont;
@@ -518,7 +540,7 @@ struct Emelet{
             for (int j=0; j<szobakSzomszedjainakAjtoi[szobaIdx].size(); j++){
                 if (gSZDEBUG) cout<<"e2"<<endl;
                 if (gSZDEBUG) cout<<i<<" "<<szobak[szobaIdx].kijarat[szobakSzomszedjainakAjtoi[szobaIdx][j]]<<endl;
-                if (i==szobak[szobaIdx].kijarat[szobakSzomszedjainakAjtoi[szobaIdx][j]]){
+                if ((i%modulo)==szobak[szobaIdx].kijarat[szobakSzomszedjainakAjtoi[szobaIdx][j]]){
                     if (gSZDEBUG) cout<<"mé"<<endl;
                     ajto = true;
                     masikSzobaIdx = szobakSzomszedjai[szobaIdx][j];
@@ -532,9 +554,9 @@ struct Emelet{
                 if (gSZDEBUG) cout<<"ret.size() "<<ret.size()<<endl;
                 if (ret.size()!=0)
                     ret.pop_back();
-                if (gSZDEBUG) cout<<"i"<<endl;
+                if (gSZDEBUG) cout<<"i "<<masikSzobaIdx<<" "<<szobaIdx<<endl;
                 vector<Szakasz> temp = getSzobaHatar(masikSzobaIdx,szobaIdx);
-                if (gSZDEBUG) cout<<"j "<<ret.size()<<" "<<temp.size()<<endl;
+                if (gSZDEBUG) cout<<"JJJJJ ret.size(): "<<ret.size()<<" "<<temp.size()<<endl;
                 if (ret.size()!=0){
 
                     ret.push_back(Szakasz(ret.back().p2,temp[0].p1));
@@ -603,6 +625,7 @@ struct Emelet{
             szobak[i].createVilag(agentSizes);
         }
 
+
         vector<Szakasz> temp = getSzobaHatar(0);
         Vilag tempV;
         tempV.alaprajz.resize(1);
@@ -617,7 +640,8 @@ struct Emelet{
         pegeszAS.resize(agentSizes.size());
         for (int i=0; i<agentSizes.size(); i++){
             egeszVaS[i]=tempV;
-            tempV.alaprajzhozTartozoLetrehozasa();
+            egeszVaS[i].agentRadius=agentSizes[i];
+            egeszVaS[i].alaprajzhozTartozoLetrehozasa();
         }
         getAjtok();
 
@@ -628,12 +652,13 @@ struct Emelet{
     }
 
     void draw(SDL_Renderer &renderer, Kamera kamera){
-        egeszVaS[0].draw(renderer,kamera);
+        if (drawFalak)
+            egeszVaS[agentSP].draw(renderer,kamera);
         //pegesz.draw(renderer,kamera);
         for (int i=0; i<szobak.size(); i++)
-            szobak[i].draw(renderer,kamera);
-        for (int i=0; i<ajtokAS[0].size(); i++){
-            vector<Ajto> ajtok = ajtokAS[0];
+            szobak[i].draw(renderer,kamera,agentSP);
+        for (int i=0; i<ajtokAS[agentSP].size() && drawAjtok; i++){
+            vector<Ajto> ajtok = ajtokAS[agentSP];
             filledTrigonRGBA(&renderer,
                             kamera.valosLekepezese(ajtok[i].a).x,kamera.valosLekepezese(ajtok[i].a).y,
                             kamera.valosLekepezese(ajtok[i].b).x,kamera.valosLekepezese(ajtok[i].b).y,
@@ -733,6 +758,22 @@ void EventHandle(SDL_Event ev){
         if (ev.key.keysym.sym == SDLK_x){
             folyamatban=true;
             f1=-1;
+        }
+        if (ev.key.keysym.sym == SDLK_1){
+            drawFalak=!drawFalak;
+        }
+        if (ev.key.keysym.sym == SDLK_2){
+            drawAjtok=!drawAjtok;
+        }
+        if (ev.key.keysym.sym == SDLK_3){
+            drawNavMesh=!drawNavMesh;
+        }
+        if (ev.key.keysym.sym == SDLK_4){
+            drawPoziciok=!drawPoziciok;
+        }
+        if (ev.key.keysym.sym == SDLK_p){
+            emelet.agentSP = (emelet.agentSP+1)%emelet.agentSizes.size();
+            cout<<"emelet.agentSP: "<<emelet.agentSP<<endl;
         }
         if (ev.key.keysym.sym == SDLK_q){
             szerkesztoMod++;

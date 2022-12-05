@@ -169,3 +169,15 @@ bool operator< (const vec2& lhs,const vec2& rhs) {
         return lhs.y<rhs.y;
     return lhs.x<rhs.x;
 }
+
+float vec2ToDeg(vec2 szV){
+    vec2 N(1,0);
+    double H = szV.x;
+    double M = H/(szV.length());
+    double ret = acos(M);
+    ret+=M_PI;
+    ret/=2.0*M_PI; ret*=360.0;
+    if (szV.y<0)
+        ret=360.f-ret;
+    return ret;
+}

@@ -288,6 +288,8 @@ void DistanceSegments2(
     vec2  Q0, vec2  Q1,
     double& sqrDistance, double& s, double& t, vec2 closest[2], bool& Dret);
 
+float vec2ToDeg(vec2 szV);
+
 #endif
 
 #endif // VEC3_H_INCLUDED

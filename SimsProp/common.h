@@ -27,8 +27,8 @@
 #define MAGAS 480
 
 
-#define EPSZ 0.001f
-#define EPSZ2 0.000001f
+#define EPSZ 0.00001f
+#define EPSZ2 0.00001f
 #define DEBUG false
 #define DEBUG2 false
 #define RANDOM false

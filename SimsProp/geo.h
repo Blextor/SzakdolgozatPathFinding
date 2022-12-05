@@ -97,9 +97,41 @@ bool operator== (const Szakasz& lhs,const Szakasz& rhs) {
 
 /// set<> -hez szükséges a rendezésnél
 bool operator< (const Szakasz& lhs,const Szakasz& rhs) {
-    if (lhs.p1==rhs.p1)
-        return lhs.p2<rhs.p2;
-    return lhs.p1<rhs.p1;
+    //if ((lhs.p1.x<lhs.p2.x && rhs.p1.x<rhs.p2.x))
+    //if ((lhs.p1==rhs.p1 && lhs.p2==rhs.p2) || (lhs.p2==rhs.p1 && lhs.p1==rhs.p2))
+    Szakasz lhs2;
+    if (lhs.p1.x<lhs.p2.x){
+        lhs2=lhs;
+    } else if (lhs.p1.x==lhs.p2.x){
+        if (lhs.p1.y<=lhs.p2.y){
+            lhs2=lhs;
+        } else {
+            lhs2.p2=lhs.p1;
+            lhs2.p1=lhs.p2;
+        }
+    } else {
+        lhs2.p2=lhs.p1;
+        lhs2.p1=lhs.p2;
+    }
+
+    Szakasz rhs2;
+    if (rhs.p1.x<rhs.p2.x){
+        rhs2=rhs;
+    } else if (rhs.p1.x==rhs.p2.x){
+        if (rhs.p1.y<=rhs.p2.y){
+            rhs2=rhs;
+        } else {
+            rhs2.p2=rhs.p1;
+            rhs2.p1=rhs.p2;
+        }
+    } else {
+        rhs2.p2=rhs.p1;
+        rhs2.p1=rhs.p2;
+    }
+        return false;
+    if (lhs2.p1==rhs2.p1)
+        return lhs2.p2<rhs2.p2;
+    return lhs2.p1<rhs2.p1;
 }
 
 
@@ -118,37 +150,90 @@ bool operator< (const HonnanPont& lhs,const HonnanPont& rhs) {
     return lhs.p<rhs.p;
 }
 
+/// precízebb, de mégsem
+// NEM HASZNÁLT
+bool metszikEgymastPrec(Szakasz sz1, Szakasz sz2){
+    double ma, ba, mb, bb;
+    ma = (sz1.p1.y-sz1.p2.y)/(sz1.p1.x-sz1.p2.x);
+    ba = sz1.p1.y - ma * sz1.p1.x;
+
+    mb = (sz2.p1.y-sz2.p2.y)/(sz2.p1.x-sz2.p2.x);
+    bb = sz2.p1.y - mb * sz2.p1.x;
+
+    if (abs(ma-mb)<EPSZ)
+        return false;
+
+    double x = (bb-ba)/(ma-mb);
+    if ((sz1.p1.x+EPSZ<=x && x+EPSZ<=sz1.p2.x) || (sz1.p2.x+EPSZ<=x && x<=sz1.p1.x)){
+        if ((sz2.p1.x+EPSZ<=x && x+EPSZ<=sz2.p2.x) || (sz2.p2.x+EPSZ<=x && x<=sz2.p1.x))
+            return true;
+    }
+    return false;
+}
+
+// NEM HASZNÁLT
+bool metszikVagyAtlapolodnakPrec(Szakasz sz1, Szakasz sz2){
+    if ((sz1.p1 == sz2.p1 && sz1.p2 == sz2.p2) || (sz1.p2 == sz2.p1 && sz1.p1 == sz2.p2))
+        return true;
+    double ma, ba, mb, bb;
+    ma = (sz1.p1.y-sz1.p2.y)/(sz1.p1.x-sz1.p2.x);
+    ba = sz1.p1.y - ma * sz1.p1.x;
+
+    mb = (sz2.p1.y-sz2.p2.y)/(sz2.p1.x-sz2.p2.x);
+    bb = sz2.p1.y - mb * sz2.p1.x;
+
+    double x = (bb-ba)/(ma-mb);
+
+    if (abs(ma-mb)<EPSZ2 && abs(ba-bb)<EPSZ2)
+        return true;
+
+    if ((sz1.p1.x+EPSZ<=x && x+EPSZ<=sz1.p2.x) || (sz1.p2.x+EPSZ<=x && x+EPSZ<=sz1.p1.x)){
+        if ((sz2.p1.x+EPSZ<=x && x+EPSZ<=sz2.p2.x) || (sz2.p2.x+EPSZ<=x && x+EPSZ<=sz2.p1.x))
+            return true;
+    }
+    return false;
+}
 
 /// függvény a metszésre, mert kell neki paraméter és sok helyet lehet ezzel spórolni
 bool metszikEgymast(Szakasz sz1, Szakasz sz2){
+    /*
     double res = 0, s = 0, t = 0;
     vec2 closest2[2];
     bool Dret = false;
     DistanceSegments2(sz1.p1,sz1.p2,sz2.p1,sz2.p2,res,s,t,closest2,Dret);
-    return (!Dret && res<EPSZ && ((t>EPSZ && t<1.0f-EPSZ) || (s>EPSZ && s<1.0f-EPSZ) ));
+    return (!Dret && res<EPSZ && ((t>EPSZ && t<1.0f-EPSZ) || (s>EPSZ && s<1.0f-EPSZ) ));*/
+    return metszikEgymastPrec(sz1,sz2);
 }
 
 /// függvény a metszésre, mert kell neki paraméter és sok helyet lehet ezzel spórolni
 vec2 metszikEgymastHol(Szakasz sz1, Szakasz sz2){
+
+    double ma, ba, mb, bb;
+    ma = (sz1.p1.y-sz1.p2.y)/(sz1.p1.x-sz1.p2.x);
+    ba = sz1.p1.y - ma * sz1.p1.x;
+
+    mb = (sz2.p1.y-sz2.p2.y)/(sz2.p1.x-sz2.p2.x);
+    bb = sz2.p1.y - mb * sz2.p1.x;
+
+    double x = (bb-ba)/(ma-mb);
+    double y = ma*x+ba;
+    return vec2(x,y);
+
+    /*
     double res = 0, s = 0, t = 0;
     vec2 closest2[2];
     bool Dret = false;
     DistanceSegments2(sz1.p1,sz1.p2,sz2.p1,sz2.p2,res,s,t,closest2,Dret);
     return closest2[0];
+    */
 }
 
-/// precízebb, de mégsem
-// NEM HASZNÁLT
-bool metszikEgymastPrec(Szakasz sz1, Szakasz sz2){
-    double res = 0, s = 0, t = 0;
-    vec2 closest2[2];
-    bool Dret = false;
-    DistanceSegments2(sz1.p1,sz1.p2,sz2.p1,sz2.p2,res,s,t,closest2,Dret);
-    return (!Dret && res<EPSZ2 && ((t>EPSZ2 && t<1.0f-EPSZ2) || (s>EPSZ2 && s<1.0f-EPSZ2) ));
-}
+
 
 /// nincs megengedve az, hogy a metszésen kívül párhozamosan illeszkedjenek egmyásra, esetleg hogy ugyan azok legyenek
 bool metszikVagyAtlapolodnak(Szakasz sz1, Szakasz sz2){
+    return metszikVagyAtlapolodnakPrec(sz1,sz2);
+    /*
     if ((sz1.p1 == sz2.p1 && sz1.p2 == sz2.p2) || (sz1.p2 == sz2.p1 && sz1.p1 == sz2.p2))
         return true;
     double res = 0, s = 0, t = 0;
@@ -156,18 +241,10 @@ bool metszikVagyAtlapolodnak(Szakasz sz1, Szakasz sz2){
     bool Dret = false;
     DistanceSegments2(sz1.p1,sz1.p2,sz2.p1,sz2.p2,res,s,t,closest2,Dret);
     return (res<EPSZ && ((t>EPSZ && t<1.0f-EPSZ) || (s>EPSZ && s<1.0f-EPSZ) ));
+    */
 }
 
-// NEM HASZNÁLT
-bool metszikVagyAtlapolodnakPrec(Szakasz sz1, Szakasz sz2){
-    if ((sz1.p1 == sz2.p1 && sz1.p2 == sz2.p2) || (sz1.p2 == sz2.p1 && sz1.p1 == sz2.p2))
-        return true;
-    double res = 0, s = 0, t = 0;
-    vec2 closest2[2];
-    bool Dret = false;
-    DistanceSegments2(sz1.p1,sz1.p2,sz2.p1,sz2.p2,res,s,t,closest2,Dret);
-    return (res<EPSZ2 && ((t>EPSZ2 && t<1.0f-EPSZ2) || (s>EPSZ2 && s<1.0f-EPSZ2) ));
-}
+
 
 
 
@@ -199,6 +276,14 @@ struct Haromszog{
         A=a; B=b; C=c;
     }
 };
+
+
+
+float szakaszToDeg(Szakasz sz){
+    vec2 szV = sz.p2-sz.p1; szV.normalize();
+    float ret = vec2ToDeg(szV);
+    return ret;
+}
 
 /// tetszőleges szakaszok halmaza, külsőleg kell rendezni a szakaszokat, hogy irányba álljanak
 struct Sikidom{
@@ -232,8 +317,106 @@ struct Sikidom{
         }
     }
 
-    /// belső vagy a külső átlókért felel
+
+
+    /// belső vagy az összes átló kiszámítása 2 (szögekkel)
     vector<Szakasz> belsoAtlok(bool osszes=false){
+        //cout<<"H"<<endl;
+        vector<Szakasz> atlok;  /// ebbe kerulnek majd bele az atlok
+        if (nyilt){   /// ha nyilt, vagy nem a belso a fontos, akkor nem kell foglalkozni vele
+            return atlok;
+        }
+        vector<Szakasz> oldalak = szakaszok;
+        vector<Szakasz> atlokEsOldalak = oldalak;   /// ezekkel nem szabad metszeni magunkat
+        vector<vec2> csucsok;                       /// miket akarunk osszekottetni
+        ///cout<<"OLDALAK"<<endl;
+        for (int i=0; i<oldalak.size(); i++){
+            ///cout<<oldalak[i].p1.x<<" "<<oldalak[i].p1.y<<", "<<oldalak[i].p2.x<<" "<<oldalak[i].p2.y<<" "<<endl;
+            csucsok.push_back(oldalak[i].p1);
+        }
+        for (int i=0; i<csucsok.size(); i++){
+            for (int j=i; j<csucsok.size(); j++){   /// megnézünk minden csúcspárost
+                if (i==j)
+                    continue;
+                bool siker = true;
+                Szakasz sz(csucsok[i],csucsok[j]);  /// szakaszt képzünk belőlük
+                for (int k=0; k<atlokEsOldalak.size(); k++){
+                    if (metszikVagyAtlapolodnak(sz,atlokEsOldalak[k])){ /// ha valamivel átlapolódnok, akkor baj van
+                        siker = false;
+                    }
+                }
+                if (siker){ /// ha nem lapolódtak át, akkor mind az átlókhoz, mind az ÉsOldalakhoz hozzáadjuk őket
+                    atlok.push_back(sz);
+                    atlokEsOldalak.push_back(sz);
+                }
+            }
+        }
+        vector<vector<int>> szomszedCsucsIdx(csucsok.size()); /// eltárolom, hogy mely csúcsok melyekkel vannak összekötve
+        for (int i=0; i<atlokEsOldalak.size(); i++){    /// megnézem, hogy végül kik lettek összekötve
+            int p1, p2; /// csúcsok sorszáma
+            for (int j=0; j<csucsok.size(); j++){ /// összes csúcsot végignézve
+                if (atlokEsOldalak[i].p1==csucsok[j]) /// ha egyezés van
+                    p1=j;   /// akkor a sorszám meg is van
+                if (atlokEsOldalak[i].p2==csucsok[j]) /// itt
+                    p2=j;   /// szintúgy
+            }
+            szomszedCsucsIdx[p1].push_back(p2); /// majd a szomszédságot eltárolom
+            szomszedCsucsIdx[p2].push_back(p1); /// költsönüsen
+        }
+
+        bool stop = false; /// ha baj van, álljon meg
+        int cnt=0;  // CSAK DEBUG, hogy hányszor fut le
+        if (DEBUG2) cout<<"atlokBefore: "<<atlok.size()<<endl;
+        set<Szakasz> mentettOsszesAtlo(atlok.begin(),atlok.end()); /// ennyi az osszes egymást nem metsző átló
+        if (osszes)
+            return atlok;
+
+
+        for (int i=0; i<szakaszok.size(); i++){
+            Szakasz o1 = szakaszok[i];
+            Szakasz o2 = szakaszok[(i+1)%szakaszok.size()];
+            float minDeg = szakaszToDeg(o1.inv());
+            float maxDeg = szakaszToDeg(o2);
+            bool rotapota = false;
+            if (minDeg>maxDeg){
+                rotapota = true;
+            }
+
+            for (int j=0; j<atlok.size(); j++){
+                Szakasz atlo = atlok[j];
+                if (atlo.p2 == o2.p1){
+                    atlo.p2 = atlo.p1;
+                    atlo.p1 = o2.p1;
+                }
+                if (atlo.p1==o2.p1){
+                    if (!rotapota){
+                        float k = vec2ToDeg(atlo.p2-atlo.p1);
+                        if (k>minDeg+EPSZ && k+EPSZ<maxDeg){
+                            /// OK
+                        } else {
+                            atlok.erase(atlok.begin()+j);
+                            j--;
+                            continue;
+                        }
+                    } else {
+                        float k = vec2ToDeg(atlo.p2-atlo.p1);
+                        if (k>minDeg-EPSZ || k-EPSZ<maxDeg){
+                            /// OK
+                        } else {
+                            atlok.erase(atlok.begin()+j);
+                            j--;
+                            continue;
+                        }
+                    }
+                }
+            }
+        }
+
+        return atlok;
+    }
+
+    /// belső vagy a külső átlókért felel
+    vector<Szakasz> belsoAtlok3(bool osszes=false){
         vector<Szakasz> atlok;  /// ebbe kerulnek majd bele az atlok
         if (nyilt){   /// ha nyilt, vagy nem a belso a fontos, akkor nem kell foglalkozni vele
             return atlok;
@@ -333,8 +516,8 @@ struct Sikidom{
                                     bIdxK = k; // NEM HASZNÁLT
                                     bIdxL = l; // NEM HASZNÁLT
                                 }
-                                else // DEBUG, NE FORDULJON ELŐ, mert egy szakazhoz csak 2 háromszög tartozhat
-                                    cout<<"ERROR"<<endl;
+                                else{} // DEBUG, NE FORDULJON ELŐ, mert egy szakazhoz csak 2 háromszög tartozhat
+                                    //cout<<"PERROR"<<endl;
                             }
                         }
                     }
@@ -410,6 +593,8 @@ struct Palya{
     vector<Sikidom> sikidomok; /// határoló síkidomok
     vector<Sikidom> navMesh;  /// bejárható tér
     vector<vector<Szakasz>> belsoAtlok; /// síkidomok belső átlói
+    vector<vector<Szakasz>> kulsoAtlok;
+    vector<Szakasz> joBelso;
     vector<Szakasz> BAszakasz; /// számításhoz szükséges szakaszok
     vector<Szakasz> szakaszBA; /// számításhoz szükséges szakaszok
 
@@ -494,6 +679,132 @@ struct Palya{
         */
     }
 
+    void bakeNavMesh2(){
+        bakeAtloNavMesh();
+        //bakeKulsoNavMesh2();
+        vector<Szakasz> nemMetszheto;
+        for (int i=0; i<belsoAtlok.size(); i++){
+            nemMetszheto.insert(nemMetszheto.end(),belsoAtlok[i].begin(),belsoAtlok[i].end());
+        }
+        vector<vec2> csucsok;
+        for (int i=0; i<sikidomok.size(); i++){
+            nemMetszheto.insert(nemMetszheto.end(),sikidomok[i].szakaszok.begin(),sikidomok[i].szakaszok.end());
+            for (int j=0; j<sikidomok[i].szakaszok.size(); j++){
+                csucsok.push_back(sikidomok[i].szakaszok[j].p1);
+            }
+        }
+        vector<Szakasz> joBelsoAtlok;
+        for (int i=0; i<csucsok.size(); i++){
+            for (int j=0; j<csucsok.size(); j++){
+                if (i==j)
+                    continue;
+                Szakasz sz(csucsok[i],csucsok[j]);
+                bool baj = false;
+                for (int k=0; k<nemMetszheto.size(); k++){
+                    if (nemMetszheto[k]==sz || metszikEgymast(nemMetszheto[k],sz)){
+                        baj = true;
+                        break;
+                    }
+                }
+                if (baj)
+                    continue;
+                nemMetszheto.push_back(sz);
+                joBelsoAtlok.push_back(sz);
+            }
+        }
+        //set<Szakasz> tempBelso;
+        //copy(joBelsoAtlok.begin(),joBelsoAtlok.end(),inserter(tempBelso, tempBelso.end()));
+        //joBelsoAtlok.clear();
+        //joBelsoAtlok.assign(tempBelso.begin(),tempBelso.end());
+        joBelso=joBelsoAtlok;
+
+
+        joBelsoAtlok.insert(joBelsoAtlok.end(),joBelso.begin(),joBelso.end());
+        for (int i=0; i<sikidomok.size(); i++){
+            joBelsoAtlok.insert(joBelsoAtlok.end(),sikidomok[i].szakaszok.begin(),sikidomok[i].szakaszok.end());
+        }
+        //joBelso=joBelsoAtlok;
+        int check = INT_MAX;
+        //return;
+        while (joBelsoAtlok.size()!=0 && check != joBelsoAtlok.size()){
+            //cout<<joBelsoAtlok.size()<<endl;
+            check=joBelsoAtlok.size();
+            bool ok = true;
+            for (int i=0; i<joBelsoAtlok.size() && ok;i++){
+                for (int j=i+1; j<joBelsoAtlok.size() && ok;j++){
+                    for (int k=j+1; k<joBelsoAtlok.size() && ok;k++){
+                        if ((joBelsoAtlok[i]==joBelsoAtlok[j] || joBelsoAtlok[i]==joBelsoAtlok[k] || joBelsoAtlok[k]==joBelsoAtlok[j])){
+                            continue;
+                        }
+                        set<vec2> harom;
+                        harom.insert(joBelsoAtlok[i].p1);
+                        harom.insert(joBelsoAtlok[i].p2);
+                        harom.insert(joBelsoAtlok[j].p1);
+                        harom.insert(joBelsoAtlok[j].p2);
+                        harom.insert(joBelsoAtlok[k].p1);
+                        harom.insert(joBelsoAtlok[k].p2);
+                        if (harom.size()==3){
+                            vector<vec2> cs; cs.assign(harom.begin(),harom.end());
+                            Sikidom s;
+                            s.szakaszok.push_back(Szakasz(cs[0],cs[1]));
+                            s.szakaszok.push_back(Szakasz(cs[1],cs[2]));
+                            s.szakaszok.push_back(Szakasz(cs[2],cs[0]));
+                            bool marVan = false;
+                            for (int l=0; l<navMesh.size(); l++){
+                                bool a = false, b = false, c = false;
+                                Szakasz temp = navMesh[l].szakaszok[0];
+                                if (!(temp==joBelsoAtlok[i] || temp==joBelsoAtlok[j] || temp==joBelsoAtlok[k]))
+                                    continue;
+                                temp = navMesh[l].szakaszok[1];
+                                if (!(temp==joBelsoAtlok[i] || temp==joBelsoAtlok[j] || temp==joBelsoAtlok[k]))
+                                    continue;
+                                temp = navMesh[l].szakaszok[2];
+                                if (!(temp==joBelsoAtlok[i] || temp==joBelsoAtlok[j] || temp==joBelsoAtlok[k]))
+                                    continue;
+                                marVan=true;
+                                break;
+                            }
+                            if (marVan)
+                                continue;
+                            /*
+                            for (int l=0; l<3; l++){
+                                if (s.szakaszok[l]==joBelsoAtlok[i] || s.szakaszok[l]==joBelsoAtlok[j] || s.szakaszok[l]==joBelsoAtlok[k]){
+
+                                } else {
+                                    continue;
+                                }
+                            }
+                            */
+                            navMesh.push_back(s);
+
+                            joBelsoAtlok.erase(joBelsoAtlok.begin()+i);
+                            joBelsoAtlok.erase(joBelsoAtlok.begin()+j-1);
+                            joBelsoAtlok.erase(joBelsoAtlok.begin()+k-2);
+                            ok=false;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        //navMesh.clear();
+        joBelso=joBelsoAtlok;
+        /*
+        set<Szakasz> tempBelso;
+        copy(joBelso.begin(),joBelso.end(),inserter(tempBelso, tempBelso.end()));
+        for (int i=0; i<navMesh.size(); i++){
+            for (int j=0; j<navMesh[i].szakaszok.size();j++){
+                if (tempBelso.find(navMesh[i].szakaszok[j]) != tempBelso.end()){
+                    tempBelso.erase(tempBelso.find(navMesh[i].szakaszok[j]));
+                }
+            }
+        }
+        joBelso.clear();
+        joBelso.assign(tempBelso.begin(),tempBelso.end());
+        navMesh.clear();
+        */
+    }
+
     void bakeNavMesh(){
         /// minden síkidom oldalát felhasználva próbálok képezni egy-egy háromszöget valamelyik másik síkidom egyik csúcsával
         vector<vector<vec2>> halmaz; /// eltárolom a síkidomok csúcsait síkidomonként
@@ -559,8 +870,9 @@ struct Palya{
                             vec2 closest2[2];   /// szintúgy
                             bool Dret = false; /// szintúgy
 
-                            DistanceSegments2(sz1.p1,sz1.p2,szakaszok[z].p1,szakaszok[z].p2,res,s,t,closest2,Dret); /// mag a metszés keresése
-                            if (res<EPSZ && ((t>EPSZ && t<1.0f-EPSZ) || (s>EPSZ && s<1.0f-EPSZ) )){ /// ha viszonylag metszéspontnak mondható
+                            //DistanceSegments2(sz1.p1,sz1.p2,szakaszok[z].p1,szakaszok[z].p2,res,s,t,closest2,Dret); /// mag a metszés keresése
+                            //if (res<EPSZ && ((t>EPSZ && t<1.0f-EPSZ) || (s>EPSZ && s<1.0f-EPSZ) )){ /// ha viszonylag metszéspontnak mondható
+                            if (metszikEgymast(sz1,szakaszok[z])){
                                 if (DEBUG) cout<<"BAJOS1"<<endl;
                                 if (DEBUG) cout<<res<<", s: "<<s<<", t:"<<t<<", "<<closest2[0].x<<" "<<closest2[1].y<<", "<<closest2[1].x<<" "<<closest2[1].y<<endl;
                                 if (DEBUG) cout<<"i: "<<i<<", j: "<<j<<endl;
@@ -570,8 +882,9 @@ struct Palya{
                                 continue;
                             }
                             //if ()
-                            DistanceSegments2(sz2.p1,sz2.p2,szakaszok[z].p1,szakaszok[z].p2,res,s,t,closest2,Dret); /// mag a metszés keresése a másik szakaszon
-                            if (res<EPSZ && ((t>EPSZ && t<1.0f-EPSZ) || (s>EPSZ && s<1.0f-EPSZ) )){ /// ha viszonylag metszéspontnak mondható
+                            //DistanceSegments2(sz2.p1,sz2.p2,szakaszok[z].p1,szakaszok[z].p2,res,s,t,closest2,Dret); /// mag a metszés keresése a másik szakaszon
+                            //if (res<EPSZ && ((t>EPSZ && t<1.0f-EPSZ) || (s>EPSZ && s<1.0f-EPSZ) )){ /// ha viszonylag metszéspontnak mondható
+                            if (metszikEgymast(sz2,szakaszok[z])){
                                 if (DEBUG) cout<<"BAJOS2"<<endl;
                                 if (DEBUG) cout<<res<<", s: "<<s<<", t:"<<t<<", "<<closest2[0].x<<" "<<closest2[1].y<<", "<<closest2[1].x<<" "<<closest2[1].y<<endl;
                                 if (DEBUG) cout<<"i: "<<i<<", j: "<<j<<endl;
@@ -657,8 +970,9 @@ struct Palya{
                         //vec2 p0(sz1.p1.x,sz1.p2.y), p1(2.0f, 1.0f), q0(0.0f, 1.0f), q1(2.0f, 1.0f);
                         vec2 closest2[2];
                         bool Dret = false;
-                        DistanceSegments2(sz1.p1,sz1.p2,szakaszok[z].p1,szakaszok[z].p2,res,s,t,closest2,Dret);
-                        if (!Dret && res<EPSZ && ((t>EPSZ && t<1.0f-EPSZ) || (s>EPSZ && s<1.0f-EPSZ) )){
+                        //DistanceSegments2(sz1.p1,sz1.p2,szakaszok[z].p1,szakaszok[z].p2,res,s,t,closest2,Dret);
+                        //if (!Dret && res<EPSZ && ((t>EPSZ && t<1.0f-EPSZ) || (s>EPSZ && s<1.0f-EPSZ) )){
+                        if (metszikEgymast(sz1,szakaszok[z])){
                             if (DEBUG) cout<<"BAJOS1"<<endl;
                             if (DEBUG) cout<<res<<", s: "<<s<<", t:"<<t<<", "<<closest2[0].x<<" "<<closest2[1].y<<", "<<closest2[1].x<<" "<<closest2[1].y<<endl;
                             if (DEBUG) cout<<"i: "<<i<<", j: "<<j<<endl;
@@ -668,8 +982,9 @@ struct Palya{
                             continue;
                         }
                         //if ()
-                        DistanceSegments2(sz2.p1,sz2.p2,szakaszok[z].p1,szakaszok[z].p2,res,s,t,closest2,Dret);
-                        if (!Dret && res<EPSZ && ((t>EPSZ && t<1.0f-EPSZ) || (s>EPSZ && s<1.0f-EPSZ) )){
+                        //DistanceSegments2(sz2.p1,sz2.p2,szakaszok[z].p1,szakaszok[z].p2,res,s,t,closest2,Dret);
+                        //if (!Dret && res<EPSZ && ((t>EPSZ && t<1.0f-EPSZ) || (s>EPSZ && s<1.0f-EPSZ) )){
+                        if (metszikEgymast(sz2,szakaszok[z])){
                             if (DEBUG) cout<<"BAJOS2"<<endl;
                             if (DEBUG) cout<<res<<", s: "<<s<<", t:"<<t<<", "<<closest2[0].x<<" "<<closest2[1].y<<", "<<closest2[1].x<<" "<<closest2[1].y<<endl;
                             if (DEBUG) cout<<"i: "<<i<<", j: "<<j<<endl;
@@ -775,7 +1090,7 @@ struct Palya{
         if (DEBUG) cout<<"navMesh.size() "<<navMesh.size()<<endl;
 
         clock_t t2 = clock();   /// IDŐMÉRŐ
-        fillNavMesh(); /// minden maradék helyet ki kell tölteni
+        //fillNavMesh(); /// minden maradék helyet ki kell tölteni
         cout<<"fillNavMesh() time: "<<clock()-t2<<endl; /// időtartama
 
     }
@@ -1459,9 +1774,48 @@ struct Palya{
 
     /// DEBUG, de kiszámolja és megjeleníti a síkidomok átlóit
     void bakeAtloNavMesh(bool osszes=false) {
+        belsoAtlok.clear();
         for (int i=0; i<sikidomok.size(); i++){
             vector<Szakasz> temp = sikidomok[i].belsoAtlok(osszes);
             belsoAtlok.push_back(temp);
+        }
+    }
+
+    void bakeKulsoNavMesh(){
+        for (int i=0; i<sikidomok.size(); i++){
+            vector<Szakasz> temp = sikidomok[i].belsoAtlok(true);
+            vector<Szakasz> temp2 = sikidomok[i].belsoAtlok();
+            temp2.insert(temp2.end(),sikidomok[i].szakaszok.begin(),sikidomok[i].szakaszok.end());
+            for (int i=0; i<temp.size(); i++){
+                for (int j=0; j<temp2.size(); j++){
+                    if (temp[i]==temp2[j]){
+                        temp.erase(temp.begin()+i);
+                        i--;
+                        break;
+                    }
+                }
+            }
+            kulsoAtlok.push_back(temp);
+        }
+    }
+
+    void bakeKulsoNavMesh2(bool osszes=false){
+        for (int i=0; i<sikidomok.size(); i++){
+            vector<Szakasz> temp = sikidomok[i].belsoAtlok(osszes);
+            /*
+            vector<Szakasz> temp2; //= sikidomok[i].belsoAtlok2();
+            temp2.insert(temp2.end(),sikidomok[i].szakaszok.begin(),sikidomok[i].szakaszok.end());
+            for (int i=0; i<temp.size(); i++){
+                for (int j=0; j<temp2.size(); j++){
+                    if (temp[i]==temp2[j]){
+                        temp.erase(temp.begin()+i);
+                        i--;
+                        break;
+                    }
+                }
+            }
+            */
+            kulsoAtlok.push_back(temp);
         }
     }
 
@@ -1472,15 +1826,23 @@ struct Palya{
                 kamera.valosLekepezese(vec2(posX+sizeX,0)).x,kamera.valosLekepezese(vec2(0,posY+sizeY)).y,100,100,100,255);
         */
 
+        /*
         for (int i=0; i<sikidomok.size(); i++){
             sikidomok[i].draw(renderer,kamera);
         }
+        */
         for (int i=0; i<navMesh.size(); i++){
             if (i+1!=sok%(navMesh.size()+1) && sok%(navMesh.size()+1)!=0)
                 continue;
             navMesh[i].draw(renderer,kamera,true);
         }
 
+        /*
+        for (int i=0; i<kulsoAtlok.size(); i++){
+            for (int j=0; j<kulsoAtlok[i].size(); j++){
+                kulsoAtlok[i][j].draw(renderer,kamera,255,255,255);
+            }
+        }
         for (int i=0; i<belsoAtlok.size(); i++){
             for (int j=0; j<belsoAtlok[i].size(); j++){
                 belsoAtlok[i][j].draw(renderer,kamera,10,20,255);
@@ -1489,6 +1851,10 @@ struct Palya{
         for (int i=0; i<BAszakasz.size(); i++){
             BAszakasz[i].draw(renderer,kamera,0,0,0);
         }
+        for (int i=0; i<joBelso.size(); i++){
+            joBelso[i].draw(renderer,kamera,255,30,255);
+        }
+        */
     }
 };
 
