@@ -304,7 +304,7 @@ struct Sikidom{
                        g,b,r,255);
 
         }
-        for (int i=0; i<szakaszok.size(); i++){
+        for (size_t i=0; i<szakaszok.size(); i++){
             lineRGBA(&renderer,
                 kamera.valosLekepezese(szakaszok[i].p1).x,kamera.valosLekepezese(szakaszok[i].p1).y,
                 kamera.valosLekepezese(szakaszok[i].p2).x,kamera.valosLekepezese(szakaszok[i].p2).y,
@@ -332,17 +332,17 @@ struct Sikidom{
         vector<Szakasz> atlokEsOldalak = oldalak;   /// ezekkel nem szabad metszeni magunkat
         vector<vec2> csucsok;                       /// miket akarunk osszekottetni
         ///cout<<"OLDALAK"<<endl;
-        for (int i=0; i<oldalak.size(); i++){
+        for (size_t i=0; i<oldalak.size(); i++){
             ///cout<<oldalak[i].p1.x<<" "<<oldalak[i].p1.y<<", "<<oldalak[i].p2.x<<" "<<oldalak[i].p2.y<<" "<<endl;
             csucsok.push_back(oldalak[i].p1);
         }
-        for (int i=0; i<csucsok.size(); i++){
-            for (int j=i; j<csucsok.size(); j++){   /// megnézünk minden csúcspárost
+        for (size_t i=0; i<csucsok.size(); i++){
+            for (size_t j=i; j<csucsok.size(); j++){   /// megnézünk minden csúcspárost
                 if (i==j)
                     continue;
                 bool siker = true;
                 Szakasz sz(csucsok[i],csucsok[j]);  /// szakaszt képzünk belőlük
-                for (int k=0; k<atlokEsOldalak.size(); k++){
+                for (size_t k=0; k<atlokEsOldalak.size(); k++){
                     if (metszikVagyAtlapolodnak(sz,atlokEsOldalak[k])){ /// ha valamivel átlapolódnok, akkor baj van
                         siker = false;
                     }
@@ -354,9 +354,9 @@ struct Sikidom{
             }
         }
         vector<vector<int>> szomszedCsucsIdx(csucsok.size()); /// eltárolom, hogy mely csúcsok melyekkel vannak összekötve
-        for (int i=0; i<atlokEsOldalak.size(); i++){    /// megnézem, hogy végül kik lettek összekötve
+        for (size_t i=0; i<atlokEsOldalak.size(); i++){    /// megnézem, hogy végül kik lettek összekötve
             int p1, p2; /// csúcsok sorszáma
-            for (int j=0; j<csucsok.size(); j++){ /// összes csúcsot végignézve
+            for (size_t j=0; j<csucsok.size(); j++){ /// összes csúcsot végignézve
                 if (atlokEsOldalak[i].p1==csucsok[j]) /// ha egyezés van
                     p1=j;   /// akkor a sorszám meg is van
                 if (atlokEsOldalak[i].p2==csucsok[j]) /// itt
@@ -366,15 +366,15 @@ struct Sikidom{
             szomszedCsucsIdx[p2].push_back(p1); /// költsönüsen
         }
 
-        bool stop = false; /// ha baj van, álljon meg
-        int cnt=0;  // CSAK DEBUG, hogy hányszor fut le
+        ///bool stop = false; /// ha baj van, álljon meg
+        ///size_t cnt=0;  // CSAK DEBUG, hogy hányszor fut le
         if (DEBUG2) cout<<"atlokBefore: "<<atlok.size()<<endl;
         set<Szakasz> mentettOsszesAtlo(atlok.begin(),atlok.end()); /// ennyi az osszes egymást nem metsző átló
         if (osszes)
             return atlok;
 
 
-        for (int i=0; i<szakaszok.size(); i++){
+        for (size_t i=0; i<szakaszok.size(); i++){
             Szakasz o1 = szakaszok[i];
             Szakasz o2 = szakaszok[(i+1)%szakaszok.size()];
             float minDeg = szakaszToDeg(o1.inv());
@@ -384,7 +384,7 @@ struct Sikidom{
                 rotapota = true;
             }
 
-            for (int j=0; j<atlok.size(); j++){
+            for (int j=0; j<(int)atlok.size(); j++){
                 Szakasz atlo = atlok[j];
                 if (atlo.p2 == o2.p1){
                     atlo.p2 = atlo.p1;
@@ -427,17 +427,17 @@ struct Sikidom{
         vector<Szakasz> atlokEsOldalak = oldalak;   /// ezekkel nem szabad metszeni magunkat
         vector<vec2> csucsok;                       /// miket akarunk osszekottetni
         ///cout<<"OLDALAK"<<endl;
-        for (int i=0; i<oldalak.size(); i++){
+        for (size_t i=0; i<oldalak.size(); i++){
             ///cout<<oldalak[i].p1.x<<" "<<oldalak[i].p1.y<<", "<<oldalak[i].p2.x<<" "<<oldalak[i].p2.y<<" "<<endl;
             csucsok.push_back(oldalak[i].p1);
         }
-        for (int i=0; i<csucsok.size(); i++){
-            for (int j=i; j<csucsok.size(); j++){   /// megnézünk minden csúcspárost
+        for (size_t i=0; i<csucsok.size(); i++){
+            for (size_t j=i; j<csucsok.size(); j++){   /// megnézünk minden csúcspárost
                 if (i==j)
                     continue;
                 bool siker = true;
                 Szakasz sz(csucsok[i],csucsok[j]);  /// szakaszt képzünk belőlük
-                for (int k=0; k<atlokEsOldalak.size(); k++){
+                for (size_t k=0; k<atlokEsOldalak.size(); k++){
                     if (metszikVagyAtlapolodnak(sz,atlokEsOldalak[k])){ /// ha valamivel átlapolódnok, akkor baj van
                         siker = false;
                     }
@@ -449,9 +449,9 @@ struct Sikidom{
             }
         }
         vector<vector<int>> szomszedCsucsIdx(csucsok.size()); /// eltárolom, hogy mely csúcsok melyekkel vannak összekötve
-        for (int i=0; i<atlokEsOldalak.size(); i++){    /// megnézem, hogy végül kik lettek összekötve
+        for (size_t i=0; i<atlokEsOldalak.size(); i++){    /// megnézem, hogy végül kik lettek összekötve
             int p1, p2; /// csúcsok sorszáma
-            for (int j=0; j<csucsok.size(); j++){ /// összes csúcsot végignézve
+            for (size_t j=0; j<csucsok.size(); j++){ /// összes csúcsot végignézve
                 if (atlokEsOldalak[i].p1==csucsok[j]) /// ha egyezés van
                     p1=j;   /// akkor a sorszám meg is van
                 if (atlokEsOldalak[i].p2==csucsok[j]) /// itt
@@ -469,9 +469,9 @@ struct Sikidom{
             return atlok;
         while(!stop){ /// amíg nics baj
             // CSAK DEBUG
-            for (int i=0; i<szomszedCsucsIdx.size() && DEBUG; i++){
+            for (size_t i=0; i<szomszedCsucsIdx.size() && DEBUG; i++){
                 cout<<"Szomszedok: ";
-                for (int j=0; j<szomszedCsucsIdx[i].size(); j++){
+                for (size_t j=0; j<szomszedCsucsIdx[i].size(); j++){
                     cout<<szomszedCsucsIdx[i][j]<<", ";
                 }
                 cout<<endl;
@@ -563,9 +563,9 @@ struct Sikidom{
             }
         }
         // CSAK DEBUG
-        for (int i=0; i<szomszedCsucsIdx.size() && DEBUG; i++){
+        for (size_t i=0; i<szomszedCsucsIdx.size() && DEBUG; i++){
             cout<<"Szomszedok: ";
-            for (int j=0; j<szomszedCsucsIdx[i].size(); j++){
+            for (size_t j=0; j<szomszedCsucsIdx[i].size(); j++){
                 cout<<szomszedCsucsIdx[i][j]<<", ";
             }
             cout<<endl;
@@ -574,7 +574,7 @@ struct Sikidom{
         if (DEBUG) cout<<"atlok: "<<atlok.size()<<endl;
         /// komplementere kell az eredmények, ha belülről járható be a síkidom
         if (belso){
-            for (int i=0; i<atlok.size(); i++){ /// kivonom az összes átlót az összesből
+            for (size_t i=0; i<atlok.size(); i++){ /// kivonom az összes átlót az összesből
                 if (mentettOsszesAtlo.find(atlok[i])!=mentettOsszesAtlo.end()){
                     mentettOsszesAtlo.erase(mentettOsszesAtlo.find(atlok[i]));
                 }
@@ -685,24 +685,24 @@ struct Palya{
         bakeAtloNavMesh();
         //bakeKulsoNavMesh2();
         vector<Szakasz> nemMetszheto;
-        for (int i=0; i<belsoAtlok.size(); i++){
+        for (size_t i=0; i<belsoAtlok.size(); i++){
             nemMetszheto.insert(nemMetszheto.end(),belsoAtlok[i].begin(),belsoAtlok[i].end());
         }
         vector<vec2> csucsok;
-        for (int i=0; i<sikidomok.size(); i++){
+        for (size_t i=0; i<sikidomok.size(); i++){
             nemMetszheto.insert(nemMetszheto.end(),sikidomok[i].szakaszok.begin(),sikidomok[i].szakaszok.end());
-            for (int j=0; j<sikidomok[i].szakaszok.size(); j++){
+            for (size_t j=0; j<sikidomok[i].szakaszok.size(); j++){
                 csucsok.push_back(sikidomok[i].szakaszok[j].p1);
             }
         }
         vector<Szakasz> joBelsoAtlok;
-        for (int i=0; i<csucsok.size(); i++){
-            for (int j=0; j<csucsok.size(); j++){
+        for (size_t i=0; i<csucsok.size(); i++){
+            for (size_t j=0; j<csucsok.size(); j++){
                 if (i==j)
                     continue;
                 Szakasz sz(csucsok[i],csucsok[j]);
                 bool baj = false;
-                for (int k=0; k<nemMetszheto.size(); k++){
+                for (size_t k=0; k<nemMetszheto.size(); k++){
                     if (nemMetszheto[k]==sz || metszikEgymast(nemMetszheto[k],sz)){
                         baj = true;
                         break;

@@ -436,6 +436,161 @@ struct Ajto{
     vec2 a,b,c,d;
 };
 
+struct Csucs{
+    vec2 pos;
+    mutable vector<int> szomszedok;
+    mutable vector<vec2> szomszedokVecPos;
+    mutable set<vec2> szomszedokPos;
+    mutable int ordNum = -1;
+
+    void addSzomszedokPos(vec2 a, vec2 b) const{
+        szomszedokPos.insert(a);
+        szomszedokPos.insert(b);
+    }
+    Csucs(){}
+    Csucs(vec2 a){pos=a;}
+    Csucs(vec2 a, vec2 b, vec2 c){
+        pos = a;
+        szomszedokPos.clear();
+        szomszedokPos.insert(b);
+        szomszedokPos.insert(c);
+    }
+};
+
+/// set<> -hez szükséges a rendezésnél
+bool operator< (const Csucs& lhs,const Csucs& rhs) {
+    return lhs.pos<rhs.pos;
+}
+
+struct NavigaciosHalo{
+    vector<Szoba> szobak;
+    vector<vector<Ajto>> ajtok;
+    vector<float> agentSizes;
+
+    Vilag vilag;
+    vector<vector<Csucs>> emeletCsucsai;
+
+    void config(){
+        clock_t t = clock();
+        vector<set<Csucs>> emeletaTempCsucsai;
+        emeletaTempCsucsai.resize(agentSizes.size());
+        for (int i=0; i<szobak.size(); i++){
+            for (int j=0; j<szobak[i].navigaciosTerAS.size(); j++){
+                for (int k=0; k<szobak[i].navigaciosTerAS[j].navMesh.size(); k++){
+                    vec2 a = szobak[i].navigaciosTerAS[j].navMesh[k].szakaszok[0].p1;
+                    vec2 b = szobak[i].navigaciosTerAS[j].navMesh[k].szakaszok[1].p1;
+                    vec2 c = szobak[i].navigaciosTerAS[j].navMesh[k].szakaszok[2].p1;
+                    set<Csucs>::iterator it;
+                    it = emeletaTempCsucsai[j].find(Csucs(a));
+                    if (it==emeletaTempCsucsai[j].end())
+                        emeletaTempCsucsai[j].insert(Csucs(a,b,c));
+                    else
+                        it->addSzomszedokPos(b,c);
+                    it = emeletaTempCsucsai[j].find(Csucs(b));
+                    if (it==emeletaTempCsucsai[j].end())
+                        emeletaTempCsucsai[j].insert(Csucs(b,a,c));
+                    else
+                        it->addSzomszedokPos(a,c);
+                    it = emeletaTempCsucsai[j].find(Csucs(c));
+                    if (it==emeletaTempCsucsai[j].end())
+                        emeletaTempCsucsai[j].insert(Csucs(c,b,a));
+                    else
+                        it->addSzomszedokPos(b,a);
+                }
+            }
+        }
+        for (int i=0; i<ajtok.size(); i++){
+            for (int j=0; j<ajtok[i].size(); j++){
+                set<Csucs>::iterator it;
+                Ajto ajto = ajtok[i][j];
+                it = emeletaTempCsucsai[i].find(Csucs(ajto.a));
+                if (it==emeletaTempCsucsai[i].end())
+                    cout<<"Ajto csucsa nincs benne a halmazban"<<endl;
+                else
+                    it->addSzomszedokPos(ajto.c,ajto.d);
+                it = emeletaTempCsucsai[i].find(Csucs(ajto.b));
+                if (it==emeletaTempCsucsai[i].end())
+                    cout<<"Ajto csucsa nincs benne a halmazban"<<endl;
+                else
+                    it->addSzomszedokPos(ajto.c,ajto.d);
+                it = emeletaTempCsucsai[i].find(Csucs(ajto.c));
+                if (it==emeletaTempCsucsai[i].end())
+                    cout<<"Ajto csucsa nincs benne a halmazban"<<endl;
+                else
+                    it->addSzomszedokPos(ajto.a,ajto.b);
+                it = emeletaTempCsucsai[i].find(Csucs(ajto.d));
+                if (it==emeletaTempCsucsai[i].end())
+                    cout<<"Ajto csucsa nincs benne a halmazban"<<endl;
+                else
+                    it->addSzomszedokPos(ajto.a,ajto.b);
+            }
+        }
+
+        emeletCsucsai.resize(emeletaTempCsucsai.size());
+        for (int i=0; i<emeletaTempCsucsai.size(); i++){
+            vector<Csucs> temp(emeletaTempCsucsai[i].begin(),emeletaTempCsucsai[i].end());
+            emeletCsucsai[i]=temp;
+            for (int j=0; j<emeletCsucsai[i].size(); j++){
+                set<Csucs>::iterator it;
+                it = emeletaTempCsucsai[i].find(emeletCsucsai[i][j]);
+                vector<vec2> temp2(emeletCsucsai[i][j].szomszedokPos.begin(),emeletCsucsai[i][j].szomszedokPos.end());
+                emeletCsucsai[i][j].szomszedokVecPos = temp2;
+                it->ordNum=j;
+            }
+        }
+        for (int i=0; i<emeletCsucsai.size(); i++){
+            for (int j=0; j<emeletCsucsai[i].size(); j++){
+                emeletCsucsai[i][j].szomszedok.resize(emeletCsucsai[i][j].szomszedokVecPos.size());
+                for (int k=0; k<emeletCsucsai[i][j].szomszedokVecPos.size(); k++){
+                    set<Csucs>::iterator it;
+                    it = emeletaTempCsucsai[i].find(emeletCsucsai[i][j].szomszedokVecPos[k]);
+                    emeletCsucsai[i][j].szomszedok[k]=it->ordNum;
+                }
+            }
+        }
+        cout<<"NavHalo config: "<<clock()-t<<endl;
+    }
+};
+
+NavigaciosHalo navHalo;
+
+struct NapirendiPont{
+    string teremNev = "";
+    float kezdete = 0.f, vege = 0.f;
+
+    NapirendiPont(){}
+    NapirendiPont(string nev, float k, float v){teremNev=nev; kezdete=k; vege=v;}
+};
+
+struct Utpont{
+    vec2 pos;
+};
+
+struct Utvonal{
+    vector<Utpont> utpontok;
+    vector<int> szobahatarok;
+
+    int aktualisUtpont = 0;
+
+    bool vege = false;
+
+    bool utvonalAlgo(vec2 start, vec2 cel, float szeles){
+
+    }
+};
+
+struct Jarokelo{
+    vec2 pos;
+    vec2 velo;
+
+    float maxSebesseg = 1.6f;
+    float szelesseg = 3.0f;
+
+    vector<NapirendiPont> napirend;
+    Utvonal utvonal;
+
+};
+
 struct Emelet{
     vector<Szoba> szobak;
     //vector<vector<int>> szomszedosSzobak;
@@ -580,7 +735,9 @@ struct Emelet{
         return ret;
     }
 
-    Emelet(){
+    Emelet(){}
+
+    Emelet(bool alap){
         clock_t t=clock();
         int szCnt = 11;
         szobak.resize(szCnt);
@@ -654,6 +811,41 @@ struct Emelet{
         szobak[9].getIntrest(0,szobak[6],3);
         szobak[10].getIntrest(0,szobak[6],4);
 
+        config();
+        cout<<"EMELET: "<<clock()-t<<endl;
+    }
+
+    Emelet(string fajlnev){
+        ifstream emeletFile("emeletek/"+fajlnev+".txt");
+        clock_t t=clock();
+        int szobaCnt = 0;
+        emeletFile>>szobaCnt;
+        szobak.resize(szobaCnt);
+        szobakSzomszedjai.resize(szobaCnt);
+        szobakSzomszedjainakAjtoi.resize(szobaCnt);
+        string str;
+        for (int i=0; i<szobaCnt; i++){
+            emeletFile>>str;
+            szobak[i].loadSzobaFromFile(str);
+        }
+        int szobaSzomszedsagCnt = 0;
+        emeletFile>>szobaSzomszedsagCnt;
+        int szobaFromIdx = 0, szobaToIdx = 0, ajto1Idx = 0, ajto2Idx = 0;
+        for (int i=0; i<szobaSzomszedsagCnt; i++){
+            emeletFile>>szobaFromIdx>>szobaToIdx>>ajto1Idx>>ajto2Idx;
+            szobakSzomszedjai[szobaFromIdx].push_back(szobaToIdx);
+            szobakSzomszedjainakAjtoi[szobaFromIdx].push_back(ajto1Idx);
+            szobakSzomszedjai[szobaToIdx].push_back(szobaFromIdx);
+            szobakSzomszedjainakAjtoi[szobaToIdx].push_back(ajto2Idx);
+            szobak[szobaToIdx].getIntrest(ajto2Idx,szobak[szobaFromIdx],ajto1Idx);
+        }
+        config();
+        cout<<"EMELET: "<<clock()-t<<endl;
+    }
+
+
+    void config(){
+
         agentSizes.clear();
         for (float i=10.f; i<=15.f; i+=0.5f){
             agentSizes.push_back(i);
@@ -684,10 +876,12 @@ struct Emelet{
         }
         getAjtok();
 
-        //pegesz.sikidomok=egeszV.alaprajzhozTartozo;
-        //pegesz.bakeNavMesh();
-        cout<<"EMELET: "<<clock()-t<<endl;
-
+        navHalo.szobak=szobak;
+        navHalo.agentSizes=agentSizes;
+        navHalo.ajtok=ajtokAS;
+        navHalo.vilag.alaprajz.resize(1);
+        navHalo.vilag.alaprajz[0].szakaszok=temp;
+        navHalo.config();
     }
 
     void draw(SDL_Renderer &renderer, Kamera kamera){
@@ -941,6 +1135,16 @@ void simulation(SDL_Window &window, SDL_Renderer &renderer){
     clock_t last_sec=clock();
     bool frame=true;
     clock_t dt = 0;
+    cout<<"Emelet betoltese fajlbol (y/n): ";
+    string valasz;
+    cin>>valasz;
+    if (valasz[0]=='y'){
+        cout<<"Adja meg a fajl nevet: ";
+        cin>>valasz;
+        emelet = Emelet(valasz);
+    } else {
+        emelet = Emelet(true);
+    }
 
     /// megjelenítési és eseménykezelő ciklus
     while(!stop){
