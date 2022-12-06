@@ -308,7 +308,7 @@ struct Sikidom{
             lineRGBA(&renderer,
                 kamera.valosLekepezese(szakaszok[i].p1).x,kamera.valosLekepezese(szakaszok[i].p1).y,
                 kamera.valosLekepezese(szakaszok[i].p2).x,kamera.valosLekepezese(szakaszok[i].p2).y,
-                     r,g,b,255);
+                     g,g,b,255);
         }
         /*
         for (int i=0; i<szakaszok.size(); i++){
@@ -1844,6 +1844,7 @@ struct Palya{
             sikidomok[i].draw(renderer,kamera);
         }
         */
+
         for (int i=0; i<navMesh.size(); i++){
             if (i+1!=sok%(navMesh.size()+1) && sok%(navMesh.size()+1)!=0)
                 continue;

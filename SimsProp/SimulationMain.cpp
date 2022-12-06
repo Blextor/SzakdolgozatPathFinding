@@ -227,7 +227,7 @@ struct Vilag{
         }
         */
 
-        /*
+
         for (int i=0; i<alaprajzhozTartozo.size(); i++){
             for (int j=0; j<alaprajzhozTartozo[i].szakaszok.size(); j++){
                 lineRGBA(&renderer,
@@ -239,7 +239,7 @@ struct Vilag{
                          60,160,128,200);
             }
         }
-        */
+
         if (drawPoziciok){
             for (int i=0; i<diakok.size(); i++){
                 filledCircleRGBA(&renderer,
@@ -707,7 +707,7 @@ struct Emelet{
                             kamera.valosLekepezese(ajtok[i].a).x,kamera.valosLekepezese(ajtok[i].a).y,
                             kamera.valosLekepezese(ajtok[i].b).x,kamera.valosLekepezese(ajtok[i].b).y,
                             kamera.valosLekepezese(ajtok[i].c).x,kamera.valosLekepezese(ajtok[i].c).y,
-                            0,255,0,255);
+                            255,255,0,255);
             filledTrigonRGBA(&renderer,
                             kamera.valosLekepezese(ajtok[i].d).x,kamera.valosLekepezese(ajtok[i].d).y,
                             kamera.valosLekepezese(ajtok[i].a).x,kamera.valosLekepezese(ajtok[i].a).y,
@@ -717,7 +717,7 @@ struct Emelet{
                             kamera.valosLekepezese(ajtok[i].d).x,kamera.valosLekepezese(ajtok[i].d).y,
                             kamera.valosLekepezese(ajtok[i].a).x,kamera.valosLekepezese(ajtok[i].a).y,
                             kamera.valosLekepezese(ajtok[i].c).x,kamera.valosLekepezese(ajtok[i].c).y,
-                            0,255,0,255);
+                            255,255,0,255);
         }
     }
 };
@@ -966,7 +966,7 @@ void simulation(SDL_Window &window, SDL_Renderer &renderer){
         /// egy képkocka
         if (frame){
             framesInLastSec++;
-            SDL_SetRenderDrawColor( &renderer, 50, 50, 50, 255 ); /// tisztító szín
+            SDL_SetRenderDrawColor( &renderer, 255, 255, 255, 255 ); /// tisztító szín
             SDL_RenderClear(&renderer); /// tiszta
             kamera.moveCamera(dt); /// mozgatja a kamerát
             /*
