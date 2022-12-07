@@ -874,7 +874,7 @@ struct NavigaciosHalo{
                     ujHarId=haromszogIdK[i];
                 }
             }
-            cout<<"ujHarIdx: "<<ujHarId<<" "<<aktualis.harId<<endl;
+            //cout<<"ujHarIdx: "<<ujHarId<<" "<<aktualis.harId<<endl;
             if (ujHarId==-1){
                 continue;
             }
@@ -1271,7 +1271,8 @@ struct Emelet{
     vector<vec2> utvonal;
     void MakeUtvonal(vec2 a, vec2 b){
         clock_t t = clock();
-        utvonal=navHalo.calcUtVonalB(a,b,agentSizes[0]);
+        for (int i=0; i<100; i++)
+            utvonal=navHalo.calcUtVonalB(a,b,agentSizes[0]);
         cout<<"MakeUtvonal: "<<clock()-t<<endl;
         cout<<utvonal.size()<<endl;
     }
