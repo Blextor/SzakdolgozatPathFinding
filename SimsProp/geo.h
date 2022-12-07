@@ -40,6 +40,10 @@ struct Szakasz{
         return Szakasz(p2,p1);
     }
 
+    vec2 feleP(){
+        return (p1+p2)/2;
+    }
+
     vec2 legyenLegalabbXTavra(vec2 p, float X){
         /// saját matek
         float x = vec2Tav(p); /// p távolsága a szakaszra illeszkedő egyenestől

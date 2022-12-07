@@ -433,6 +433,8 @@ struct Szoba{
 };
 
 struct Ajto{
+    string elsoSzobaNeve = "", masodikSzobaNeve = "";
+    int elsoSzobaId = -1, masodikSzobaId = -1;
     vec2 a,b,c,d;
 };
 
@@ -497,6 +499,60 @@ struct Csucs{
 bool operator< (const Csucs& lhs,const Csucs& rhs) {
     return lhs.pos<rhs.pos;
 }
+bool operator== (const Csucs& lhs,const Csucs& rhs) {
+    return lhs.pos==rhs.pos;
+}
+
+struct KifejtettCsucs{
+    Csucs csucs;
+    mutable float eddigiUt = 0;
+    mutable float utHossza = 0;
+    mutable float becsultUt = 0;
+    mutable int harId = -1;
+    mutable int id = -1;
+    mutable Csucs honnanKifejtett;
+    mutable int honnanId = -1;
+
+
+    KifejtettCsucs(){}
+    KifejtettCsucs(Csucs cs, float utHossz, float becsultUtI, int hId, KifejtettCsucs honnan, int ID){
+        csucs=cs; eddigiUt=utHossz+honnan.eddigiUt; becsultUt=becsultUtI; harId=hId; honnanKifejtett=honnan.csucs; utHossza=utHossz; id = ID; honnanId=honnan.id;
+    }
+    KifejtettCsucs(Csucs cs, float utHossz, float becsultUtI, int hId, int ID, int honnanID){
+        csucs=cs; eddigiUt=utHossz; becsultUt=becsultUtI; harId=hId; utHossza=utHossz; id = ID; honnanId=honnanID;
+    }
+};
+
+bool operator< (const KifejtettCsucs& lhs,const KifejtettCsucs& rhs) {
+    return lhs.csucs<rhs.csucs;
+}
+bool operator== (const KifejtettCsucs& lhs,const KifejtettCsucs& rhs) {
+    return lhs.csucs==rhs.csucs;
+}
+
+struct KifejtendoCsucs{
+    Csucs csucs;
+    mutable float eddigiUt = 0;
+    mutable float utHossza = 0;
+    mutable float becsultUt = 0;
+    mutable int harId = -1;
+    mutable KifejtettCsucs honnan;
+    KifejtendoCsucs(){}
+    KifejtendoCsucs(Csucs cs, float utHossz, float becsultUtI, int hId, KifejtettCsucs honnanI){
+        csucs=cs; eddigiUt=utHossz+honnanI.eddigiUt; becsultUt=becsultUtI; harId=hId; honnan=honnanI; utHossza=utHossz;
+    }
+};
+
+bool operator< (const KifejtendoCsucs& lhs,const KifejtendoCsucs& rhs) {
+    if (lhs.eddigiUt+lhs.becsultUt==rhs.eddigiUt+rhs.becsultUt)
+        return lhs.csucs<rhs.csucs;
+    return lhs.eddigiUt+lhs.becsultUt<rhs.eddigiUt+rhs.becsultUt;
+}
+bool operator== (const KifejtendoCsucs& lhs,const KifejtendoCsucs& rhs) {
+    return lhs.csucs==rhs.csucs;
+}
+
+
 
 struct NavigaciosHalo{
     vector<Szoba> szobak;
@@ -509,13 +565,14 @@ struct NavigaciosHalo{
     vector<vector<Csucs>> emeletCsucsai;
 
     vector<vector<Csucs>> emeletaOldalfelezoPontjai;
+    vector<set<Csucs>> emeletaOldalTempfelezoPontjai;
     vector<vec2> ajtokK;
 
     void config(){
         clock_t t = clock();
         vector<set<Csucs>> emeletaTempCsucsai;
-        vector<set<Csucs>> emeletaOldalTempfelezoPontjai;
         emeletaTempCsucsai.resize(agentSizes.size());
+        emeletaOldalTempfelezoPontjai.clear();
         emeletaOldalTempfelezoPontjai.resize(agentSizes.size());
         for (int i=0; i<szobak.size(); i++){
             for (int j=0; j<szobak[i].navigaciosTerAS.size(); j++){
@@ -701,30 +758,205 @@ struct NavigaciosHalo{
                 set<Csucs>::iterator itr;
                 emeletaOldalfelezoPontjai[i][j].szomszedok.resize(emeletaOldalfelezoPontjai[i][j].szomszedokPosV.size());
                 cnt+=emeletaOldalfelezoPontjai[i][j].szomszedokPosV.size();
+                set<Csucs>tempcs;
+                //cout<<emeletaOldalfelezoPontjai[i][j].szomszedokPosV.size();
                 for (int k=0; k<emeletaOldalfelezoPontjai[i][j].szomszedokPosV.size(); k++){
                     itr = emeletaOldalTempfelezoPontjai[i].find(Csucs(emeletaOldalfelezoPontjai[i][j].szomszedokPosV[k]));
+                    tempcs.insert(*itr);
                     emeletaOldalfelezoPontjai[i][j].szomszedok[k]=itr->ordNum;
                 }
+                if (tempcs.size()!=emeletaOldalfelezoPontjai[i][j].szomszedokPosV.size())
+                    cout<<"???"<<endl;
             }
-            cout<<"cnt: "<<cnt<<" "<<navMesh[i].size()<<endl;
+            //cout<<"cnt: "<<cnt<<" "<<navMesh[i].size()<<" "<<emeletaOldalfelezoPontjai[i].size()<<endl;
         }
-
-
 
         cout<<"NavHalo config: "<<clock()-t<<endl;
     }
 
+    vector<vec2> calcUtVonalB(vec2 a, vec2 b, float agentSize){
+        //cout<<"calcUtVonalB: "<<endl;
+
+
+        int z = -1;
+        for (int i=0; i<agentSizes.size(); i++){
+            if (agentSizes[i]==agentSize){
+                z=i; break;
+            }
+        }
+        vector<vec2> ret;
+        if (z==-1){
+            return ret;
+        }
+        bool aT = false, bT = false;
+        int aHarIdx = -1, bHarIdx = -1;
+        for (int i=0; i<navMesh[z].size(); i++){
+            Sikidom s = navMesh[z][i];
+            Haromszog harom(s.szakaszok[0].p1,s.szakaszok[0].p2,s.szakaszok[1].p2);
+            if (harom.benneVanAPont(a)){
+                if (aT){
+                    cout<<"tobb haromszogben is szerepel"<<endl;
+                } else {
+                    aT=true;
+                    aHarIdx=i;
+                }
+            }
+            if (harom.benneVanAPont(b)){
+                if (bT){
+                    cout<<"tobb haromszogben is szerepel"<<endl;
+                } else {
+                    bT=true;
+                    bHarIdx=i;
+                }
+            }
+        }
+        if (aT && bT && aHarIdx==bHarIdx){
+            ret.push_back(a);
+            ret.push_back(b);
+            return ret;
+        }
+        if (!(aT && bT)){
+            return ret;
+        }
+
+        //cout<<"alma"<<endl;
+        vector<KifejtettCsucs> kifejtettCsucsok;
+        set<KifejtendoCsucs> kifejtendoCsucsok;
+        Sikidom ind = navMesh[z][aHarIdx];
+        Sikidom vend = navMesh[z][bHarIdx];
+        Csucs za(ind.szakaszok[0].feleP());
+        Csucs zb(ind.szakaszok[1].feleP());
+        Csucs zc(ind.szakaszok[2].feleP());
+        set<Csucs>::iterator zitr;
+        zitr = emeletaOldalTempfelezoPontjai[z].find(za);
+        int zaIdx = zitr->ordNum;
+        zitr = emeletaOldalTempfelezoPontjai[z].find(zb);
+        int zbIdx = zitr->ordNum;
+        zitr = emeletaOldalTempfelezoPontjai[z].find(zc);
+        int zcIdx = zitr->ordNum;
+        //cout<<"balma"<<endl;
+
+        KifejtettCsucs kezdo(Csucs(a),0,(a.dist(b)),aHarIdx,0,-1);
+        kifejtettCsucsok.push_back(kezdo);
+
+        Csucs cs = emeletaOldalfelezoPontjai[z][zaIdx];
+        if (cs.szomszedok.size()==4){
+            KifejtendoCsucs tkc(cs,cs.pos.dist(a),cs.pos.dist(b),aHarIdx,kezdo);
+            kifejtendoCsucsok.insert(tkc);
+        }
+        cs = emeletaOldalfelezoPontjai[z][zbIdx];
+        if (cs.szomszedok.size()==4){
+            KifejtendoCsucs tkc(cs,cs.pos.dist(a),cs.pos.dist(b),aHarIdx,kezdo);
+            kifejtendoCsucsok.insert(tkc);
+        }
+        cs = emeletaOldalfelezoPontjai[z][zcIdx];
+        if (cs.szomszedok.size()==4){
+            KifejtendoCsucs tkc(cs,cs.pos.dist(a),cs.pos.dist(b),aHarIdx,kezdo);
+            kifejtendoCsucsok.insert(tkc);
+        }
+        //cout<<"calma"<<endl;
+        //cout<<aHarIdx<<" "<<bHarIdx<<endl;
+
+        while (true){
+            //cout<<"dalma"<<endl;
+            if (kifejtendoCsucsok.size()==0){
+                cout<<"deme"<<endl;
+                return ret;
+            }
+
+            KifejtendoCsucs aktualis = *(kifejtendoCsucsok.begin());
+            kifejtendoCsucsok.erase(kifejtendoCsucsok.begin());
+            //cout<<"ealma"<<endl;
+            vector<int> haromszogIdK = aktualis.csucs.szomszedokKozottiHaromszog;
+            int ujHarId = -1;
+            for (int i=0; i<haromszogIdK.size(); i++){
+                if (haromszogIdK[i]!=aktualis.harId){
+                    ujHarId=haromszogIdK[i];
+                }
+            }
+            cout<<"ujHarIdx: "<<ujHarId<<" "<<aktualis.harId<<endl;
+            if (ujHarId==-1){
+                continue;
+            }
+
+            if (ujHarId==bHarIdx){
+                //ret.push_back(b);
+                vector<vec2> utvonal;
+                utvonal.push_back(aktualis.csucs.pos);
+                KifejtettCsucs tempK = aktualis.honnan;
+                while (true){
+                    utvonal.push_back(tempK.csucs.pos);
+                    if (tempK.honnanId==-1)
+                        break;
+                    tempK = kifejtettCsucsok[tempK.honnanId];
+                }
+                vector<vec2> tempRet;
+                for (int i=utvonal.size()-1; i>=0; i--){
+                    tempRet.push_back(utvonal[i]);
+                }
+                tempRet.push_back(b);
+                //cout<<"deme2"<<endl;
+                return tempRet;
+            }
+            //cout<<"falma"<<endl;
+            KifejtettCsucs uj(aktualis.csucs,aktualis.utHossza,aktualis.becsultUt,aktualis.harId,aktualis.honnan,kifejtettCsucsok.size());
+            kifejtettCsucsok.push_back(uj);
+            KifejtendoCsucs ka, kb;
+            bool elso = true;
+            //cout<<"halma"<<endl;
+            for (int i=0; i<aktualis.csucs.szomszedok.size(); i++){
+                if (aktualis.csucs.szomszedokKozottiHaromszog[i]==ujHarId){
+                    //cout<<"A"<<endl;
+                    int szomszedId = aktualis.csucs.szomszedok[i];
+                    Csucs csT = emeletaOldalfelezoPontjai[z][szomszedId];
+                    KifejtendoCsucs temp(csT,csT.pos.dist(aktualis.csucs.pos),csT.pos.dist(b),ujHarId,uj);
+                    if (elso){
+                        elso = false;
+                        ka = temp;
+                    } else {
+                        kb = temp;
+                    }
+                }
+            }
+            bool bka = false, bkb = false;
+            for (set<KifejtendoCsucs>::iterator itr = kifejtendoCsucsok.begin(); itr != kifejtendoCsucsok.end(); bka=bka) {
+                bool siker = false;
+                if (!bka && (*itr).csucs.pos==ka.csucs.pos){
+                    bka=true;
+                    if ((*itr).becsultUt>ka.becsultUt){
+                        kifejtendoCsucsok.erase(itr);
+                        kifejtendoCsucsok.insert(ka);
+                        siker = true;
+                        itr = kifejtendoCsucsok.begin();
+                    }
+                }
+                if (!bkb && (*itr).csucs.pos==kb.csucs.pos){
+                    bkb=true;
+                    if ((*itr).becsultUt>kb.becsultUt){
+                        kifejtendoCsucsok.erase(itr);
+                        kifejtendoCsucsok.insert(kb);
+                        siker = true;
+                        itr = kifejtendoCsucsok.begin();
+                    }
+                }
+                if (!siker)
+                    itr++;
+            }
+            if (!bka) kifejtendoCsucsok.insert(ka);
+            if (!bkb) kifejtendoCsucsok.insert(kb);
+        }
+    }
 
     void draw(SDL_Renderer &renderer, Kamera kamera){
         for (int i=0; i<navMesh[0].size(); i++){
             navMesh[0][i].draw(renderer,kamera,true);
         }
-        //cout<<"hapci: "<<emeletaOldalfelezoPontjai[0].size()<<" "<<navMesh[0].size()<<endl;
+
         for (int i=0; i<emeletaOldalfelezoPontjai[0].size(); i++){
-            for (int j=0; j<emeletaOldalfelezoPontjai[0][j].szomszedok.size(); j++){
+            for (int j=0; j<emeletaOldalfelezoPontjai[0][i].szomszedok.size(); j++){
                 vec2 a = kamera.valosLekepezese(emeletaOldalfelezoPontjai[0][i].pos);
                 vec2 b = kamera.valosLekepezese(emeletaOldalfelezoPontjai[0][i].szomszedokPosV[j]);
-                lineRGBA(&renderer,a.x,a.y,b.x,b.y,0,0,255,255);
+                lineRGBA(&renderer,a.x,a.y,b.x,b.y,0,0,255,70);
             }
         }
         for (int i=0; i<ajtokK.size(); i++){
@@ -820,16 +1052,10 @@ struct Emelet{
 
                     float aT = INT_MAX, bT=INT_MAX, szumT = INT_MAX;
                     for (int k=0; k<szobak[i].navigaciosTerSzeleAS[ZZZ].alaprajzhozTartozo[0].szakaszok.size(); k++){
-                        //if (szobak[i].navigaciosTerSzeleAS[ZZZ].alaprajzhozTartozo[0].szakaszok[k].p1.dist(ajto1.p1)<aT){
-                            aT = szobak[i].navigaciosTerSzeleAS[ZZZ].alaprajzhozTartozo[0].szakaszok[k].p1.dist(ajto1.p1);
-                            aT += szobak[i].navigaciosTerSzeleAS[ZZZ].alaprajzhozTartozo[0].szakaszok[k].p1.dist(ajto1.p2);
-                            //ajto.a=szobak[i].navigaciosTerSzeleAS[ZZZ].alaprajzhozTartozo[0].szakaszok[k].p1;
-                        //}
-                        //if (szobak[i].navigaciosTerSzeleAS[ZZZ].alaprajzhozTartozo[0].szakaszok[k].p2.dist(ajto1.p2)<bT){
-                            bT = szobak[i].navigaciosTerSzeleAS[ZZZ].alaprajzhozTartozo[0].szakaszok[k].p2.dist(ajto1.p2);
-                            bT += szobak[i].navigaciosTerSzeleAS[ZZZ].alaprajzhozTartozo[0].szakaszok[k].p2.dist(ajto1.p1);
-                            //ajto.b=szobak[i].navigaciosTerSzeleAS[ZZZ].alaprajzhozTartozo[0].szakaszok[k].p1;
-                        //}
+                        aT = szobak[i].navigaciosTerSzeleAS[ZZZ].alaprajzhozTartozo[0].szakaszok[k].p1.dist(ajto1.p1);
+                        aT += szobak[i].navigaciosTerSzeleAS[ZZZ].alaprajzhozTartozo[0].szakaszok[k].p1.dist(ajto1.p2);
+                        bT = szobak[i].navigaciosTerSzeleAS[ZZZ].alaprajzhozTartozo[0].szakaszok[k].p2.dist(ajto1.p2);
+                        bT += szobak[i].navigaciosTerSzeleAS[ZZZ].alaprajzhozTartozo[0].szakaszok[k].p2.dist(ajto1.p1);
                         if (aT+bT<szumT){
                             szumT=aT+bT;
                             ajto.a=szobak[i].navigaciosTerSzeleAS[ZZZ].alaprajzhozTartozo[0].szakaszok[k].p1;
@@ -840,16 +1066,10 @@ struct Emelet{
 
                     float cT = INT_MAX, dT=INT_MAX, szumcdT=INT_MAX;
                     for (int k=0; k<szobak[masodikSzobaIdx].navigaciosTerSzeleAS[ZZZ].alaprajzhozTartozo[0].szakaszok.size(); k++){
-                        //if (szobak[masodikSzobaIdx].navigaciosTerSzeleAS[ZZZ].alaprajzhozTartozo[0].szakaszok[k].p1.dist(ajto2.p1)<cT){
-                            cT = szobak[masodikSzobaIdx].navigaciosTerSzeleAS[ZZZ].alaprajzhozTartozo[0].szakaszok[k].p1.dist(ajto2.p1);
-                            cT += szobak[masodikSzobaIdx].navigaciosTerSzeleAS[ZZZ].alaprajzhozTartozo[0].szakaszok[k].p1.dist(ajto2.p2);
-                            //ajto.c=szobak[masodikSzobaIdx].navigaciosTerSzeleAS[ZZZ].alaprajzhozTartozo[0].szakaszok[k].p1;
-                        //}
-                        //if (szobak[masodikSzobaIdx].navigaciosTerSzeleAS[ZZZ].alaprajzhozTartozo[0].szakaszok[k].p1.dist(ajto2.p2)<dT){
-                            dT = szobak[masodikSzobaIdx].navigaciosTerSzeleAS[ZZZ].alaprajzhozTartozo[0].szakaszok[k].p2.dist(ajto2.p1);
-                            dT += szobak[masodikSzobaIdx].navigaciosTerSzeleAS[ZZZ].alaprajzhozTartozo[0].szakaszok[k].p2.dist(ajto2.p2);
-                            //ajto.d=szobak[masodikSzobaIdx].navigaciosTerSzeleAS[ZZZ].alaprajzhozTartozo[0].szakaszok[k].p1;
-                        //}
+                        cT = szobak[masodikSzobaIdx].navigaciosTerSzeleAS[ZZZ].alaprajzhozTartozo[0].szakaszok[k].p1.dist(ajto2.p1);
+                        cT += szobak[masodikSzobaIdx].navigaciosTerSzeleAS[ZZZ].alaprajzhozTartozo[0].szakaszok[k].p1.dist(ajto2.p2);
+                        dT = szobak[masodikSzobaIdx].navigaciosTerSzeleAS[ZZZ].alaprajzhozTartozo[0].szakaszok[k].p2.dist(ajto2.p1);
+                        dT += szobak[masodikSzobaIdx].navigaciosTerSzeleAS[ZZZ].alaprajzhozTartozo[0].szakaszok[k].p2.dist(ajto2.p2);
                         if (cT+dT<szumcdT){
                             szumcdT=cT+dT;
                             ajto.c=szobak[masodikSzobaIdx].navigaciosTerSzeleAS[ZZZ].alaprajzhozTartozo[0].szakaszok[k].p1;
@@ -1048,6 +1268,13 @@ struct Emelet{
         cout<<"EMELET: "<<clock()-t<<endl;
     }
 
+    vector<vec2> utvonal;
+    void MakeUtvonal(vec2 a, vec2 b){
+        clock_t t = clock();
+        utvonal=navHalo.calcUtVonalB(a,b,agentSizes[0]);
+        cout<<"MakeUtvonal: "<<clock()-t<<endl;
+        cout<<utvonal.size()<<endl;
+    }
 
     void config(){
 
@@ -1100,6 +1327,7 @@ struct Emelet{
         navHalo.vilag.alaprajz.resize(1);
         navHalo.vilag.alaprajz[0].szakaszok=temp;
         navHalo.config();
+
     }
 
     void draw(SDL_Renderer &renderer, Kamera kamera){
@@ -1132,6 +1360,10 @@ struct Emelet{
                             kamera.valosLekepezese(ajtok[i].c).x,kamera.valosLekepezese(ajtok[i].c).y,
                             255,255,0,255);
         }
+        for (int i=1; i<utvonal.size(); i++){
+            Szakasz sz(utvonal[i-1],utvonal[i]);
+            sz.draw(renderer,kamera,0,0,0);
+        }
     }
 };
 
@@ -1148,6 +1380,10 @@ Emelet emelet;
 bool folyamatban = false;
 float f1 = 1.f;
 int szerkesztoMod = 0; /// 0 csúcsok, 1 diákok, 2 oktató
+int szerkesztoModCnt = 5;
+
+bool elsoCsucs = false;
+vec2 elsoCsucsPos;
 
 /// eseméyneket, bemeneteket itt kezelem le
 void EventHandle(SDL_Event ev){
@@ -1236,7 +1472,7 @@ void EventHandle(SDL_Event ev){
         }
         if (ev.key.keysym.sym == SDLK_q){
             szerkesztoMod++;
-            szerkesztoMod=szerkesztoMod%4;
+            szerkesztoMod=szerkesztoMod%szerkesztoModCnt;
             cout<<"szerkesztoMod: "<<szerkesztoMod<<endl;
         }
         if (ev.key.keysym.sym == SDLK_o){
@@ -1336,10 +1572,21 @@ void EventHandle(SDL_Event ev){
             vilag.oktato=temp;
         } else if (szerkesztoMod==3){
             vilag.SetAjto(kamera.kepiLekepzese(vec2(ev.button.x,ev.button.y)));
+        } else if (szerkesztoMod==4){
+            if (elsoCsucs){
+                elsoCsucs=false;
+                elsoCsucsPos = vec2(ev.button.x,ev.button.y);
+                elsoCsucsPos = kamera.kepiLekepzese(elsoCsucsPos);
+            } else {
+                elsoCsucs=true;
+                emelet.MakeUtvonal(elsoCsucsPos,kamera.kepiLekepzese(vec2(ev.button.x,ev.button.y)));
+            }
         }
+        /*
         cout<<ev.button.type<<endl;
         cout<<(int)ev.button.button<<endl;
         cout<<(int)ev.button.clicks<<endl;
+        */
     }
 
 
@@ -1386,7 +1633,7 @@ void simulation(SDL_Window &window, SDL_Renderer &renderer){
         // DEBUG
         if (clock()>=last_sec+1000){
             last_sec=clock();
-            cout<<framesInLastSec<<endl;
+            //cout<<framesInLastSec<<endl;
             framesInLastSec = 0;
         }
         /// események lekérdezése, és feldolgozása
@@ -1411,7 +1658,7 @@ void simulation(SDL_Window &window, SDL_Renderer &renderer){
             vilag.draw(renderer,kamera);
             szoba.draw(renderer,kamera);
             */
-            navHalo.draw(renderer,kamera);
+            //navHalo.draw(renderer,kamera);
             emelet.draw(renderer,kamera);
             SDL_RenderPresent(&renderer); /// meg is jeleníti
             //megjelenites(renderer,window,palya,step_cnt);
