@@ -7,6 +7,7 @@
 
 struct Kamera{
     vec2 pos;
+    float x = SZELES, y = MAGAS;
     float zoom;
     bool W=false, A=false, S=false, D=false;
 

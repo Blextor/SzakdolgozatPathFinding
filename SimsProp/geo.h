@@ -150,8 +150,7 @@ bool operator< (const HonnanPont& lhs,const HonnanPont& rhs) {
     return lhs.p<rhs.p;
 }
 
-/// precízebb, de mégsem
-// NEM HASZNÁLT
+/// precízebb
 bool metszikEgymastPrec(Szakasz sz1, Szakasz sz2){
     double ma, ba, mb, bb;
     ma = (sz1.p1.y-sz1.p2.y)/(sz1.p1.x-sz1.p2.x);
@@ -195,13 +194,14 @@ bool metszikVagyAtlapolodnakPrec(Szakasz sz1, Szakasz sz2){
 }
 
 /// függvény a metszésre, mert kell neki paraméter és sok helyet lehet ezzel spórolni
-bool metszikEgymast(Szakasz sz1, Szakasz sz2){
-    /*
-    double res = 0, s = 0, t = 0;
-    vec2 closest2[2];
-    bool Dret = false;
-    DistanceSegments2(sz1.p1,sz1.p2,sz2.p1,sz2.p2,res,s,t,closest2,Dret);
-    return (!Dret && res<EPSZ && ((t>EPSZ && t<1.0f-EPSZ) || (s>EPSZ && s<1.0f-EPSZ) ));*/
+bool metszikEgymast(Szakasz sz1, Szakasz sz2, bool precizebb = true){
+    if (!precizebb){
+        double res = 0, s = 0, t = 0;
+        vec2 closest2[2];
+        bool Dret = false;
+        DistanceSegments2(sz1.p1,sz1.p2,sz2.p1,sz2.p2,res,s,t,closest2,Dret);
+        return (!Dret && res<EPSZ3);
+    }
     return metszikEgymastPrec(sz1,sz2);
 }
 
@@ -296,7 +296,28 @@ struct Sikidom{
         int r = 255, g=0, b=0;
         if (navMesh){
             r=0; g=255;
+            Haromszog harom(kamera.valosLekepezese(szakaszok[0].p1),kamera.valosLekepezese(szakaszok[0].p2),kamera.valosLekepezese(szakaszok[1].p2));
+            for (int i=0; i<1; i++){
+                if (harom.A.x>=0 && harom.A.x<=kamera.x && harom.A.y>=0 && harom.A.y<=kamera.y) continue;
+                if (harom.B.x>=0 && harom.B.x<=kamera.x && harom.B.y>=0 && harom.B.y<=kamera.y) continue;
+                if (harom.C.x>=0 && harom.C.x<=kamera.x && harom.C.y>=0 && harom.C.y<=kamera.y) continue;
+                if (harom.benneVanAPont(vec2(0,0))) continue;
+                if (harom.benneVanAPont(vec2(kamera.x,0))) continue;
+                if (harom.benneVanAPont(vec2(0,kamera.y))) continue;
+                if (harom.benneVanAPont(vec2(kamera.x,kamera.y))) continue;
+                Szakasz a(vec2(0,0),vec2(kamera.x,0));
+                Szakasz b(vec2(0,0),vec2(0,kamera.y));
+                Szakasz c(vec2(0,kamera.y),vec2(kamera.x,kamera.y));
+                Szakasz d(vec2(kamera.x,0),vec2(kamera.x,kamera.y));
+                Szakasz A(harom.A,harom.B);
+                Szakasz B(harom.A,harom.C);
+                Szakasz C(harom.C,harom.B);
+                if (metszikEgymast(A,a) || metszikEgymast(A,b,false) || metszikEgymast(A,c) || metszikEgymast(A,d,false)) continue;
+                if (metszikEgymast(B,a) || metszikEgymast(B,b,false) || metszikEgymast(B,c) || metszikEgymast(B,d,false)) continue;
+                if (metszikEgymast(C,a) || metszikEgymast(C,b,false) || metszikEgymast(C,c) || metszikEgymast(C,d,false)) continue;
 
+                return;
+            }
             filledTrigonRGBA(&renderer,
                 kamera.valosLekepezese(szakaszok[0].p1).x,kamera.valosLekepezese(szakaszok[0].p1).y,
                 kamera.valosLekepezese(szakaszok[0].p2).x,kamera.valosLekepezese(szakaszok[0].p2).y,
