@@ -1094,56 +1094,8 @@ struct NavigaciosHalo{
         return tail;
     }
 
-    vector<vec2> calcUtvonalFull(){
-
-    }
-
-    vector<vec2> calcUtVonalB(vec2 a, vec2 b, float agentSize){
-        //cout<<"calcUtVonalB: "<<endl;
-
-
-        int z = -1;
-        for (int i=0; i<agentSizes.size(); i++){
-            if (agentSizes[i]==agentSize){
-                z=i; break;
-            }
-        }
+    vector<vec2> calcUtvonalFull(vec2 a, vec2 b, int z, int aHarIdx, int bHarIdx){
         vector<vec2> ret;
-        if (z==-1){
-            return ret;
-        }
-        bool aT = false, bT = false;
-        int aHarIdx = -1, bHarIdx = -1;
-        for (int i=0; i<navMesh[z].size(); i++){
-            Sikidom s = navMesh[z][i];
-            Haromszog harom(s.szakaszok[0].p1,s.szakaszok[0].p2,s.szakaszok[1].p2);
-            if (harom.benneVanAPont(a)){
-                if (aT){
-                    cout<<"tobb haromszogben is szerepel"<<endl;
-                } else {
-                    aT=true;
-                    aHarIdx=i;
-                }
-            }
-            if (harom.benneVanAPont(b)){
-                if (bT){
-                    cout<<"tobb haromszogben is szerepel"<<endl;
-                } else {
-                    bT=true;
-                    bHarIdx=i;
-                }
-            }
-        }
-        if (aT && bT && aHarIdx==bHarIdx){
-            ret.push_back(a);
-            ret.push_back(b);
-            return ret;
-        }
-        if (!(aT && bT)){
-            return ret;
-        }
-
-        //cout<<"alma"<<endl;
         vector<KifejtettCsucs> kifejtettCsucsok;
         set<KifejtendoCsucs> kifejtendoCsucsok;
         Sikidom ind = navMesh[z][aHarIdx];
@@ -1275,6 +1227,57 @@ struct NavigaciosHalo{
             if (!bka) kifejtendoCsucsok.insert(ka);
             if (!bkb) kifejtendoCsucsok.insert(kb);
         }
+    }
+
+    vector<vec2> calcUtVonalB(vec2 a, vec2 b, float agentSize){
+        //cout<<"calcUtVonalB: "<<endl;
+
+
+        int z = -1;
+        for (int i=0; i<agentSizes.size(); i++){
+            if (agentSizes[i]==agentSize){
+                z=i; break;
+            }
+        }
+        vector<vec2> ret;
+        if (z==-1){
+            return ret;
+        }
+        bool aT = false, bT = false;
+        int aHarIdx = -1, bHarIdx = -1;
+        for (int i=0; i<navMesh[z].size(); i++){
+            Sikidom s = navMesh[z][i];
+            Haromszog harom(s.szakaszok[0].p1,s.szakaszok[0].p2,s.szakaszok[1].p2);
+            if (harom.benneVanAPont(a)){
+                if (aT){
+                    cout<<"tobb haromszogben is szerepel"<<endl;
+                } else {
+                    aT=true;
+                    aHarIdx=i;
+                }
+            }
+            if (harom.benneVanAPont(b)){
+                if (bT){
+                    cout<<"tobb haromszogben is szerepel"<<endl;
+                } else {
+                    bT=true;
+                    bHarIdx=i;
+                }
+            }
+        }
+        if (aT && bT && aHarIdx==bHarIdx){
+            ret.push_back(a);
+            ret.push_back(b);
+            return ret;
+        }
+        if (!(aT && bT)){
+            return ret;
+        }
+
+        return (calcUtvonalFull(a,b,z,aHarIdx,bHarIdx));
+
+        //cout<<"alma"<<endl;
+
     }
 
     void draw(SDL_Renderer &renderer, Kamera kamera){
@@ -1601,7 +1604,7 @@ struct Emelet{
     vector<vec2> utvonal;
     void MakeUtvonal(vec2 a, vec2 b){
         clock_t t = clock();
-        for (int i=0; i<1; i++){
+        for (int i=0; i<100; i++){
             utvonal=navHalo.calcUtVonalB(a,b,agentSizes[0]);
 
         }
