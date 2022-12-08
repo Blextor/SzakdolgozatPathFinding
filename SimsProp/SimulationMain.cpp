@@ -433,6 +433,8 @@ struct Szoba{
 };
 
 struct Ajto{
+    int haromszogID = -1;
+    vec2 kozepe;
     string elsoSzobaNeve = "", masodikSzobaNeve = "";
     int elsoSzobaId = -1, masodikSzobaId = -1;
     vec2 a,b,c,d;
@@ -1229,6 +1231,42 @@ struct NavigaciosHalo{
         }
     }
 
+
+    vector<int> szobaLancolatRekurziv(vector<int> allapot, int cel, int z){
+        vector<int> szomszedok;
+        //cout<<"a "<<allapot.back()<<endl;
+        for (int i=0; i<ajtok[z].size(); i++){
+            Ajto t = ajtok[z][i];
+            //cout<<t.elsoSzobaId<<" "<<t.masodikSzobaId<<endl;
+            if (t.elsoSzobaId==allapot.back()){
+                if (allapot.size()==1)
+                    szomszedok.push_back(t.masodikSzobaId);
+                else {
+                    if (allapot[allapot.size()-2] != t.masodikSzobaId)
+                        szomszedok.push_back(t.masodikSzobaId);
+                }
+            }
+            if (t.masodikSzobaId==allapot.back()) {
+                if (allapot.size()==1)
+                    szomszedok.push_back(t.elsoSzobaId);
+                else {
+                    if (allapot[allapot.size()-2] != t.elsoSzobaId)
+                        szomszedok.push_back(t.elsoSzobaId);
+                }
+            }
+        }
+        //cout<<"b "<<szomszedok.size()<<endl;
+        for (int i=0; i<szomszedok.size(); i++){
+            //cout<<allapot.back()<<" "<<szomszedok[i]<<" "<<szomszedok.size()<<endl;
+            vector<int> temp = allapot;
+            temp.push_back(szomszedok[i]);
+            temp = szobaLancolatRekurziv(temp,cel,z);
+            if (temp.back()==cel)
+                return temp;
+        }
+        return allapot;
+    }
+
     vector<vec2> calcUtVonalB(vec2 a, vec2 b, float agentSize){
         //cout<<"calcUtVonalB: "<<endl;
 
@@ -1272,6 +1310,82 @@ struct NavigaciosHalo{
         }
         if (!(aT && bT)){
             return ret;
+        }
+
+        int aSzobIdx = navMesh[z][aHarIdx].szobaId;
+        int bSzobIdx = navMesh[z][bHarIdx].szobaId;
+
+        if (aSzobIdx!=bSzobIdx){
+            vector<int> szobaLancolat; szobaLancolat.push_back(aSzobIdx);
+            szobaLancolat = szobaLancolatRekurziv(szobaLancolat,bSzobIdx,z);
+
+            vector<vector<int>> lancSzakaszokEredeti;
+            vector<vector<int>> lancSzakaszok;
+            for (int i=0; i<szobaLancolat.size()-1; i++){
+                vector<int> temp;
+                temp.push_back(szobaLancolat[i]); temp.push_back(szobaLancolat[i+1]);
+                lancSzakaszokEredeti.push_back(temp);
+                if (szobaLancolat[i]<szobaLancolat[i+1]){
+                    lancSzakaszok.push_back(temp);
+                } else {
+                    reverse(temp.begin(),temp.end());
+                    lancSzakaszok.push_back(temp);
+                }
+            }
+
+            vector<int> ajtoIdxK;
+            for (int i=0; i<lancSzakaszok.size(); i++){
+                vector<vec2> temp;
+                int ajtoIdx = -1;
+                for (int k=0; k<ajtok[z].size(); k++){
+                    Ajto ajto = ajtok[z][k];
+                    if ((ajto.elsoSzobaId == lancSzakaszok[i][0] && ajto.masodikSzobaId == lancSzakaszok[i][1]) ||
+                        (ajto.masodikSzobaId == lancSzakaszok[i][1] && ajto.elsoSzobaId == lancSzakaszok[i][0])
+                        ){
+                        if (ajto.haromszogID==-1){
+                            cout<<"UJ: "<<k<<endl;
+                            vec2 kozep = ajto.a + ajto.b + ajto.c + ajto.d;
+                            kozep = kozep/4;
+                            for (int l=0; l<navMesh[z].size(); l++){
+                                Sikidom s = navMesh[z][l];
+                                Haromszog harom(s.szakaszok[0].p1,s.szakaszok[0].p2,s.szakaszok[1].p2);
+                                if (harom.benneVanAPont(kozep)){
+                                    ajtok[z][k].haromszogID = l;
+                                    ajtok[z][k].kozepe=kozep;
+                                    break;
+                                }
+                            }
+                        }
+                        ajtoIdx = k;
+                        ajtoIdxK.push_back(ajtoIdx);
+                        break;
+                    }
+                }
+            }
+
+            //if (ajtoIdxK)
+            //cout<<lancSzakaszok.size()<<" - "<<ajtoIdxK.size();
+            vector<vec2> utvonal; utvonal=calcUtvonalFull(a,ajtok[z][ajtoIdxK[0]].kozepe,z,aHarIdx,ajtok[z][ajtoIdxK[0]].haromszogID);
+            for (int i=0; i<ajtoIdxK.size()-1; i++){
+                Ajto ajto1 = ajtok[z][ajtoIdxK[i]];
+                Ajto ajto2 = ajtok[z][ajtoIdxK[i+1]];
+                bool r = false;
+                if (lancSzakaszok[i][0]!=lancSzakaszokEredeti[i][0]){
+                    Ajto temp = ajto1;
+                    ajto1 = ajto2;
+                    ajto2 = temp;
+                    r=true;
+                }
+                vector<vec2> temp = calcUtvonalFull(ajto1.kozepe,ajto2.kozepe,z,ajto1.haromszogID,ajto2.haromszogID);
+                utvonal.pop_back();
+                if (r)
+                    reverse(temp.begin(),temp.end());
+                utvonal.insert(utvonal.end(),temp.begin(),temp.end());
+            }
+            vector<vec2> temp = calcUtvonalFull(b,ajtok[z][ajtoIdxK.back()].kozepe,z,bHarIdx,ajtok[z][ajtoIdxK.back()].haromszogID);
+            reverse(temp.begin(),temp.end());
+            utvonal.insert(utvonal.end(),temp.begin(),temp.end());
+            return utvonal;
         }
 
         return (calcUtvonalFull(a,b,z,aHarIdx,bHarIdx));
@@ -1409,6 +1523,8 @@ struct Emelet{
                             ajto.d=szobak[masodikSzobaIdx].navigaciosTerSzeleAS[ZZZ].alaprajzhozTartozo[0].szakaszok[k].p2;
                         }
                     }
+                    ajto.elsoSzobaId = i;
+                    ajto.masodikSzobaId = masodikSzobaIdx;
                     ajtok.push_back(ajto);
                 }
             }
@@ -1604,7 +1720,7 @@ struct Emelet{
     vector<vec2> utvonal;
     void MakeUtvonal(vec2 a, vec2 b){
         clock_t t = clock();
-        for (int i=0; i<100; i++){
+        for (int i=0; i<1; i++){
             utvonal=navHalo.calcUtVonalB(a,b,agentSizes[0]);
 
         }
@@ -1802,6 +1918,16 @@ void EventHandle(SDL_Event ev){
         }
         if (ev.key.keysym.sym == SDLK_8){
             funnelinFlag=!funnelinFlag;
+        }
+        if (ev.key.keysym.sym == SDLK_9){
+            clock_t testT = clock();
+            for (int i=0; i<emelet.szobak.size(); i++){
+                for (int j=0; j<emelet.szobak[i].diakok.size(); j++){
+                    navHalo.calcUtVonalB(emelet.szobak[i].diakok[j].szobaPoz,emelet.belepesiPont,10.f);
+                }
+                navHalo.calcUtVonalB(emelet.szobak[i].oktato.szobaPoz,emelet.belepesiPont,10.f);
+            }
+            cout<<"TEST TIME: "<<clock()-testT<<endl;
         }
         if (ev.key.keysym.sym == SDLK_1){
             drawFalak=!drawFalak;
