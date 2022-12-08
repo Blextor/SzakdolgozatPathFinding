@@ -327,14 +327,14 @@ struct Sikidom{
                 kamera.valosLekepezese(szakaszok[0].p1).x,kamera.valosLekepezese(szakaszok[0].p1).y,
                 kamera.valosLekepezese(szakaszok[0].p2).x,kamera.valosLekepezese(szakaszok[0].p2).y,
                 kamera.valosLekepezese(szakaszok[1].p2).x,kamera.valosLekepezese(szakaszok[1].p2).y,
-                       g,b,r,255);
+                       255,200,200,255);
 
         }
-        for (size_t i=0; i<szakaszok.size(); i++){
+        for (size_t i=0; i<szakaszok.size() && false; i++){
             lineRGBA(&renderer,
                 kamera.valosLekepezese(szakaszok[i].p1).x,kamera.valosLekepezese(szakaszok[i].p1).y,
                 kamera.valosLekepezese(szakaszok[i].p2).x,kamera.valosLekepezese(szakaszok[i].p2).y,
-                     g,g,b,255);
+                     100,100,100,255);
         }
         /*
         for (int i=0; i<szakaszok.size(); i++){

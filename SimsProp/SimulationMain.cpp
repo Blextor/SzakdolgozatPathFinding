@@ -426,7 +426,7 @@ struct Szoba{
             }
         }
         */
-        navigaciosTerSzeleAS[agentSP].draw(renderer,kamera,false);
+        //navigaciosTerSzeleAS[agentSP].draw(renderer,kamera,false);
         if (drawNavMesh)
             navigaciosTerAS[agentSP].draw(renderer,kamera);
     }
@@ -1795,27 +1795,28 @@ struct Emelet{
                             kamera.valosLekepezese(ajtok[i].a).x,kamera.valosLekepezese(ajtok[i].a).y,
                             kamera.valosLekepezese(ajtok[i].b).x,kamera.valosLekepezese(ajtok[i].b).y,
                             kamera.valosLekepezese(ajtok[i].c).x,kamera.valosLekepezese(ajtok[i].c).y,
-                            255,0,0,255);
+                            255,0,0,50);
             trigonRGBA(&renderer,
                             kamera.valosLekepezese(ajtok[i].a).x,kamera.valosLekepezese(ajtok[i].a).y,
                             kamera.valosLekepezese(ajtok[i].b).x,kamera.valosLekepezese(ajtok[i].b).y,
                             kamera.valosLekepezese(ajtok[i].c).x,kamera.valosLekepezese(ajtok[i].c).y,
-                            255,255,0,255);
+                            100,100,100,100);
             filledTrigonRGBA(&renderer,
                             kamera.valosLekepezese(ajtok[i].d).x,kamera.valosLekepezese(ajtok[i].d).y,
                             kamera.valosLekepezese(ajtok[i].a).x,kamera.valosLekepezese(ajtok[i].a).y,
                             kamera.valosLekepezese(ajtok[i].c).x,kamera.valosLekepezese(ajtok[i].c).y,
-                            255,0,0,255);
+                            255,0,0,50);
             trigonRGBA(&renderer,
                             kamera.valosLekepezese(ajtok[i].d).x,kamera.valosLekepezese(ajtok[i].d).y,
                             kamera.valosLekepezese(ajtok[i].a).x,kamera.valosLekepezese(ajtok[i].a).y,
                             kamera.valosLekepezese(ajtok[i].c).x,kamera.valosLekepezese(ajtok[i].c).y,
-                            255,255,0,255);
+                            100,100,100,100);
         }
         for (int i=1; i<utvonal.size(); i++){
             Szakasz sz(utvonal[i-1],utvonal[i]);
             sz.draw(renderer,kamera,0,0,0);
         }
+        /*
         for (int i=1; i<leftDraw.size(); i++){
             Szakasz sz(leftDraw[i-1],leftDraw[i]);
             sz.draw(renderer,kamera,255,0,0);
@@ -1826,6 +1827,7 @@ struct Emelet{
         }
         filledCircleRGBA(&renderer,kamera.valosLekepezese(legbelso_left_draw).x,kamera.valosLekepezese(legbelso_left_draw).y,5,255,0,0,255);
         filledCircleRGBA(&renderer,kamera.valosLekepezese(legbelso_right_draw).x,kamera.valosLekepezese(legbelso_right_draw).y,5,0,255,0,255);
+        */
     }
 };
 
