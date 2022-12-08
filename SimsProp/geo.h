@@ -294,6 +294,7 @@ struct Sikidom{
     vector<Szakasz> szakaszok; /// síkidom oldalai
     bool nyilt = false; /// saját farkába harap a kígyó?
     bool belso = true; /// ezen belül vagy kívül lehet mozogni
+    int szobaId = -1;
 
     /// megjelenítés
     void draw(SDL_Renderer &renderer, Kamera kamera, bool navMesh=false){

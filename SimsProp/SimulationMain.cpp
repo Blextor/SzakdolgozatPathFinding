@@ -552,7 +552,31 @@ bool operator== (const KifejtendoCsucs& lhs,const KifejtendoCsucs& rhs) {
     return lhs.csucs==rhs.csucs;
 }
 
+bool isLeft(vec2 a, vec2 b, vec2 c){
+    float r = ((b.x - a.x)*(c.y - a.y) - (b.y - a.y)*(c.x - a.x));
+    return (r!=0 && r>0);
+    //return ((b.x - a.x)*(c.y - a.y) - (b.y - a.y)*(c.x - a.x)) > 0;
+}
 
+struct Funnel{
+
+
+    vec2 p, pl, pr;
+    Funnel(){}
+    Funnel(vec2 from, vec2 to, vec2 a, vec2 b){
+        p=to;
+        if (isLeft(from,to,a)){
+            pl=a; pr=b;
+        } else {
+            pl=b; pr=a;
+        }
+    }
+};
+
+bool funnelinFlag = true;
+vector<vec2> leftDraw, rightDraw;
+vec2 legbelso_left_draw;
+vec2 legbelso_right_draw;
 
 struct NavigaciosHalo{
     vector<Szoba> szobak;
@@ -708,6 +732,9 @@ struct NavigaciosHalo{
                             temp.szakaszok.push_back(a);
                             temp.szakaszok.push_back(b);
                             temp.szakaszok.push_back(c);
+                            if (emeletCsucsai[z][i].szobaId==-1)
+                                cout<<"felesleges"<<endl;
+                            temp.szobaId=emeletCsucsai[z][i].szobaId;
                             emeletCsucsai[z][i].haromszogId.push_back(navMesh[z].size());
                             emeletCsucsai[z][emeletCsucsai[z][i].szomszedok[j]].haromszogId.push_back(navMesh[z].size());
                             emeletCsucsai[z][emeletCsucsai[z][emeletCsucsai[z][i].szomszedok[j]].szomszedok[k]].haromszogId.push_back(navMesh[z].size());
@@ -772,6 +799,303 @@ struct NavigaciosHalo{
         }
 
         cout<<"NavHalo config: "<<clock()-t<<endl;
+    }
+
+    vector<vec2> Funneling(vector<int> haromszogIdKErintve, vector<vec2> utvonal, int agentSizeIdx){
+        vector<vec2> ret;
+        if (utvonal.size()<3)
+            return ret;
+
+        vec2 start = utvonal[0];
+        vector<Funnel> funVec(utvonal.size()-2);
+        for (int i=0; i<funVec.size(); i++){
+            Sikidom s = navMesh[agentSizeIdx][haromszogIdKErintve[i]];
+            if (s.szakaszok[0].feleP()==utvonal[i+1])
+                funVec[i]=Funnel(utvonal[i],utvonal[i+1],s.szakaszok[0].p1,s.szakaszok[0].p2);
+            else if (s.szakaszok[1].feleP()==utvonal[i+1])
+                funVec[i]=Funnel(utvonal[i],utvonal[i+1],s.szakaszok[1].p1,s.szakaszok[1].p2);
+            else if (s.szakaszok[2].feleP()==utvonal[i+1])
+                funVec[i]=Funnel(utvonal[i],utvonal[i+1],s.szakaszok[2].p1,s.szakaszok[2].p2);
+            else
+                cout<<"Mi a franc"<<endl;
+        }
+
+        vector<vec2>tail, left, right;
+        left.push_back(funVec[0].pl);
+        right.push_back(funVec[0].pr);
+        tail.push_back(start);
+
+        /*
+        vec2 last_left = left[0];
+        vec2 last_right = right[0];
+
+        vec2 legbelso_left = left[0]; int llIdx = 0; bool lch = false;
+        vec2 legbelso_right = right[0]; int lrIdx = 0; bool rch = false;
+        bool rightL = true;
+        for (int i=1; i<funVec.size(); i++){
+
+            rightL = true;
+            if (last_left==funVec[i].pl){
+                bool ok = false;
+                while (left.size()!=0 && isLeft(tail.back(),left[0],funVec[i].p)){
+                    tail.push_back(left[0]);
+                    left.erase(left.begin());
+                    llIdx--;
+                    if (llIdx<0)
+                        lch = true;
+                    ok = true;
+                }
+                if (ok){
+                    right.clear();
+                    legbelso_right = funVec[i].pr;
+                    lrIdx = 0;
+                }
+                last_right = funVec[i].pr;
+                if (!isLeft(tail.back(),legbelso_right,funVec[i].pr)){
+                    legbelso_right = funVec[i].pr;
+                    lrIdx = right.size()-1;
+                }
+                right.push_back(funVec[i].pr);
+            } else if (last_right==funVec[i].pr) {
+                rightL = false;
+                bool ok = false;
+                while (right.size()!=0 && !isLeft(tail.back(),right[0],funVec[i].p)){
+                    tail.push_back(right[0]);
+                    right.erase(right.begin());
+                    lrIdx--;
+                    if (lrIdx<0)
+                        rch = true;
+                    ok = true;
+                }
+                if (ok){
+                    left.clear();
+                    legbelso_left = funVec[i].pr;
+                    llIdx = 0;
+                }
+                last_left = funVec[i].pl;
+                if (isLeft(tail.back(),legbelso_left,funVec[i].pl)){
+                    legbelso_left = funVec[i].pl;
+                    llIdx = left.size()-1;
+                }
+                left.push_back(funVec[i].pl);
+            } else {
+                cout<<"Mi a franc 2"<<endl;
+            }
+            lch = true; rch = true;
+            if (lch){
+                if (left.size()==0){
+                    legbelso_left = last_left;
+                    llIdx = -1;
+                }
+                legbelso_left = left[0];
+                for (int i=0; i<left.size(); i++){
+                    if (!isLeft(tail.back(),legbelso_left,left[i])){
+                        legbelso_left = left[i];
+                        llIdx=i;
+                    }
+                }
+            }
+            if (rch){
+                if (right.size()==0){
+                    legbelso_right = last_right;
+                    lrIdx = -1;
+                }
+                legbelso_right = right[0];
+                for (int i=0; i<right.size(); i++){
+                    if (isLeft(tail.back(),legbelso_right,right[i])){
+                        legbelso_right = right[i];
+                        lrIdx=i;
+                    }
+                }
+            }
+
+            while (!isLeft(tail.back(),legbelso_right,legbelso_left)){
+                cout<<"oks"<<endl;
+                if (rightL){
+                    cout<<"left: "<<left.size()<<endl;
+                    tail.push_back(left[llIdx]);
+                    left.erase(left.begin(),left.begin()+llIdx);
+                    legbelso_left = left[0]; llIdx = 0;
+                    for (int i=0; i<left.size(); i++){
+                        if (!isLeft(tail.back(),legbelso_left,left[i])){
+                            legbelso_left = left[i];
+                            llIdx = i;
+                        }
+                    }
+                    if (left.size()==1 || left.back()==legbelso_left)
+                        break;
+                } else {
+                    cout<<"right: "<<right.size()<<endl;
+                    tail.push_back(right[lrIdx]);
+                    right.erase(right.begin(),right.begin()+lrIdx);
+                    legbelso_right = right[0]; lrIdx = 0;
+                    for (int i=0; i<right.size(); i++){
+                        if (isLeft(tail.back(),legbelso_right,right[i])){
+                            legbelso_right = right[i];
+                            lrIdx = i;
+                        }
+                    }
+                    if (right.size()==1 || right.back()==legbelso_right)
+                        break;
+                }
+            }
+
+        }
+        left.insert(left.begin(),tail.back());
+        right.insert(right.begin(),tail.back());
+
+        lch = true; rch = true;
+        if (lch){
+            if (left.size()==0){
+                legbelso_left = last_left;
+                llIdx = -1;
+            }
+            legbelso_left = left[0];
+            for (int i=0; i<left.size(); i++){
+                if (!isLeft(tail.back(),legbelso_left,left[i])){
+                    legbelso_left = left[i];
+                    llIdx=i;
+                }
+            }
+        }
+        if (rch){
+            if (right.size()==0){
+                legbelso_right = last_right;
+                lrIdx = -1;
+            }
+            legbelso_right = right[0];
+            for (int i=0; i<right.size(); i++){
+                if (isLeft(tail.back(),legbelso_right,right[i])){
+                    legbelso_right = right[i];
+                    lrIdx=i;
+                }
+            }
+        }
+
+        while (!isLeft(tail.back(),legbelso_right,legbelso_left)){
+            cout<<"oks2"<<endl;
+            if (rightL){
+                cout<<"left: "<<left.size()<<endl;
+                tail.push_back(left[llIdx]);
+                left.erase(left.begin(),left.begin()+llIdx);
+                legbelso_left = left[0]; llIdx = 0;
+                for (int i=0; i<left.size(); i++){
+                    if (!isLeft(tail.back(),legbelso_left,left[i])){
+                        legbelso_left = left[i];
+                        llIdx = i;
+                    }
+                }
+                if (left.size()==1 || left.back()==legbelso_left)
+                    break;
+            } else {
+                cout<<"right: "<<right.size()<<endl;
+                tail.push_back(right[lrIdx]);
+                right.erase(right.begin(),right.begin()+lrIdx);
+                legbelso_right = right[0]; lrIdx = 0;
+                for (int i=0; i<right.size(); i++){
+                    if (isLeft(tail.back(),legbelso_right,right[i])){
+                        legbelso_right = right[i];
+                        lrIdx = i;
+                    }
+                }
+                if (right.size()==1 || right.back()==legbelso_right)
+                    break;
+            }
+        }
+        leftDraw=left; legbelso_left_draw = legbelso_left;
+        rightDraw=right; legbelso_right_draw = legbelso_right;
+        cout<<"left: "<<left.size()<<" "<<right.size()<<endl;
+        */
+
+        vec2 legbelso_left = left[0]; int llIdx = 0;
+        vec2 legbelso_right = right[0]; int lrIdx = 0;
+        for (int i=1; i<funVec.size(); i++){
+            //cout<<"A"<<endl;
+            bool rightL = false;
+            if (funVec[i].pl==left.back()){ /// bal a közös
+                //cout<<"B"<<endl;
+                rightL = true;
+                right.push_back(funVec[i].pr);
+                if (right.size()==1){
+                    legbelso_right = right[0];
+                    lrIdx = 0;
+                } else {
+                    if (isLeft(tail.back(),legbelso_right, right.back())){
+                        legbelso_right = right.back();
+                        lrIdx = right.size()-1;
+                    }
+                }
+            } else { /// jobb a közös
+                //cout<<"C"<<endl;
+                left.push_back(funVec[i].pl);
+                if (left.size()==1){
+                    legbelso_left = left[0];
+                    llIdx = 0;
+                } else {
+                    if (!isLeft(tail.back(),legbelso_left, left.back())){
+                        legbelso_left = left.back();
+                        llIdx = left.size()-1;
+                    }
+                }
+            }
+            //cout<<"D"<<endl;
+            while (isLeft(tail.back(),legbelso_left,legbelso_right)){
+                //cout<<"E"<<endl;
+                if (rightL){
+                    //cout<<"q"<<endl;
+                    tail.push_back(legbelso_left);
+                    left.erase(left.begin(),left.begin()+llIdx+1);
+                    //cout<<"v "<<left.size()<<endl;
+                    if (left.size()==0 || left.size()>100000){
+                        //cout<<"LEFT 0"<<endl;
+                        left.clear();
+                        break;
+                    } else {
+                        legbelso_left = left[0];
+                        for (int i=0; i<left.size(); i++){
+                            if (!isLeft(tail.back(),legbelso_left,left[i])){
+                                legbelso_left = left[i];
+                                llIdx = i;
+                            }
+                        }
+                    }
+                } else {
+                    //cout<<"z"<<endl;
+                    tail.push_back(legbelso_right);
+                    right.erase(right.begin(),right.begin()+lrIdx+1);
+                    //cout<<"u "<<right.size()<<endl;
+                    if (right.size()==0 || right.size()>100000){
+                        //cout<<"RIGHT 0"<<endl;
+                        right.clear();
+                        break;
+                    } else {
+                        legbelso_right = right[0];
+                        for (int i=0; i<right.size(); i++){
+                            if (isLeft(tail.back(),legbelso_right,right[i])){
+                                legbelso_right = right[i];
+                                lrIdx = i;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        //cout<<"F"<<endl;
+
+        //vec2 legbelso_left = left[0];
+        //vec2 legbelso_right = right[0];
+        tail.push_back(utvonal.back());
+        left.push_back(tail.back());
+        right.push_back(tail.back());
+        leftDraw=left; legbelso_left_draw = legbelso_left;
+        rightDraw=right; legbelso_right_draw = legbelso_right;
+        //cout<<"left: "<<left.size()<<" "<<right.size()<<endl;
+        tail.push_back(utvonal.back());
+        return tail;
+    }
+
+    vector<vec2> calcUtvonalFull(){
+
     }
 
     vector<vec2> calcUtVonalB(vec2 a, vec2 b, float agentSize){
@@ -860,7 +1184,7 @@ struct NavigaciosHalo{
         while (true){
             //cout<<"dalma"<<endl;
             if (kifejtendoCsucsok.size()==0){
-                cout<<"deme"<<endl;
+                //cout<<"deme"<<endl;
                 return ret;
             }
 
@@ -882,12 +1206,16 @@ struct NavigaciosHalo{
             if (ujHarId==bHarIdx){
                 //ret.push_back(b);
                 vector<vec2> utvonal;
+                vector<int> haromszogIdKErintve;
                 utvonal.push_back(aktualis.csucs.pos);
                 KifejtettCsucs tempK = aktualis.honnan;
+                haromszogIdKErintve.push_back(bHarIdx);
+                haromszogIdKErintve.push_back(aktualis.harId);
                 while (true){
                     utvonal.push_back(tempK.csucs.pos);
                     if (tempK.honnanId==-1)
                         break;
+                    haromszogIdKErintve.push_back(tempK.harId); /// nem kell a kezdőpontot háomszögét belevenni, mert a háromszögének pontjai már benne vannak
                     tempK = kifejtettCsucsok[tempK.honnanId];
                 }
                 vector<vec2> tempRet;
@@ -895,7 +1223,9 @@ struct NavigaciosHalo{
                     tempRet.push_back(utvonal[i]);
                 }
                 tempRet.push_back(b);
-                //cout<<"deme2"<<endl;
+                reverse(haromszogIdKErintve.begin(), haromszogIdKErintve.end());
+                if (funnelinFlag)
+                    tempRet = Funneling(haromszogIdKErintve,tempRet,z);
                 return tempRet;
             }
             //cout<<"falma"<<endl;
@@ -1271,8 +1601,10 @@ struct Emelet{
     vector<vec2> utvonal;
     void MakeUtvonal(vec2 a, vec2 b){
         clock_t t = clock();
-        for (int i=0; i<100; i++)
+        for (int i=0; i<1; i++){
             utvonal=navHalo.calcUtVonalB(a,b,agentSizes[0]);
+
+        }
         cout<<"MakeUtvonal: "<<clock()-t<<endl;
         cout<<utvonal.size()<<endl;
     }
@@ -1365,6 +1697,16 @@ struct Emelet{
             Szakasz sz(utvonal[i-1],utvonal[i]);
             sz.draw(renderer,kamera,0,0,0);
         }
+        for (int i=1; i<leftDraw.size(); i++){
+            Szakasz sz(leftDraw[i-1],leftDraw[i]);
+            sz.draw(renderer,kamera,255,0,0);
+        }
+        for (int i=1; i<rightDraw.size(); i++){
+            Szakasz sz(rightDraw[i-1],rightDraw[i]);
+            sz.draw(renderer,kamera,0,255,0);
+        }
+        filledCircleRGBA(&renderer,kamera.valosLekepezese(legbelso_left_draw).x,kamera.valosLekepezese(legbelso_left_draw).y,5,255,0,0,255);
+        filledCircleRGBA(&renderer,kamera.valosLekepezese(legbelso_right_draw).x,kamera.valosLekepezese(legbelso_right_draw).y,5,0,255,0,255);
     }
 };
 
@@ -1454,6 +1796,9 @@ void EventHandle(SDL_Event ev){
         if (ev.key.keysym.sym == SDLK_x){
             folyamatban=true;
             f1=-1;
+        }
+        if (ev.key.keysym.sym == SDLK_8){
+            funnelinFlag=!funnelinFlag;
         }
         if (ev.key.keysym.sym == SDLK_1){
             drawFalak=!drawFalak;
