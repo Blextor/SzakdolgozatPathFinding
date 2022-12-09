@@ -1,0 +1,66 @@
+https://github.com/Blextor/SzakdolgozatPathFinding a projekt link-je
+
+A SimsProp.exe program működése korlátolt és csak megfelelő módon lehet használni.
+A SzobaSzerkeszto.exe program használata könnyebb.
+
+
+SzobaSzerkeszto.exe:
+
+Ezzel lehet szobát létrehozni.
+Szoba létrehozásához szükséges először óramutató járásával megegyező irányba kijelölni a szoba oldalait.
+Ezt követően az óramutató járásával ellentétes irányba ki lehet jelölni tetszőleges számú tereptárgyat a szobában.
+A kijelölés során az első bal egérgombnak a kattintásnak nincsen nyoma.
+A jobb egérgombot csak akkor nyomjuk meg, ha a síkidomot be kívánjuk fejezni. A rajzolt törtvonalat a jobb egérgom megnyomása esetén lezárja síkidommá.
+Ha a síkidom rajzolása közben meggondolnánk magunkat, akkor a görgető megnyomásával törölhetjük az aktuális síkidom tervet.
+Az utolsó síkidom törlésére a Z gombbal van lehetőség.
+
+A szoba falai és a tereptárgyak határoló síkidomjait a C gombbal lehet megjeleníteni.
+A határoló síkidomokat szélesebb, vagy keskenyebb emberekre megnézni a J és K gombokkal lehet, ekkor a C gombot újra le kell nyomni.
+Lehet az Y és az X gombok a határolósíkidomokat folyamatosan szűkítik vagy tágítják.
+
+A Q gomb megnyomásával lehet választani a szerkesztői módok közül.
+A síkidomok, a diákok, az oktató és az ajtók létrehozása között.
+A diákokat tetszőleges egér gombbal létrehozhatjuk. Törtölni őket a szerkesztői módban az M gombbal lehet.
+Az oktató pozícióját kijelölni szintén a szerkesztői módjában bármely egér gombbal lehet. Törtölni az M gombbal lehet.
+Az ajtók esetében a síkidom egyik fala közelébe kattintva lehet kijelölni, hogy melyik oldala legyen ajtó.
+Csak a szoba falaira használjuk és csak egyszer az ajtó létrehozását! Törölni az utolsót az M gombbal lehet.
+
+Régi és hiáb háromszöghálót a Z és U gombok egymás utáni lenyomásával lehet megnézni, de felesleges.
+T gombbal lehet a síkidomokat törölni, R gombbal lehet a háromszöghálót törölni, ahogy a nézetet alaphelyzetbe állítani.
+
+
+A WASD gombokkla lehet különböző irányokba elmozgatni a vásznat.
+A görgővel lehet közelíteni és távolítani.
+
+
+N gombot megnyomva a parancssorba beírt néven elmenti a szobát a szobak mappába.
+O gombbal a szoba átjárhatóságát lehet állítani, de az érték nem használt.
+
+
+
+SimsProp.exe:
+
+Az eddigi összes gomb ugyan úgy működik, de ne használjuk az R-t leszámítva.
+A program elindulásakol a parancssorban meg lehet adni, hogy fájlból kívánunk-e betölteni alaprajzot, vagy a belekódolt emelettel kívánunk dolgozni.
+
+Ezt követően a gombok szabadon használhatóak.
+
+
+Az 1-4 ig a gombok a program egyes részeit jeleníti, illetve tünteti el.
+A 8-as gomb a "tölcsérező" algoritmust kapcsolja ki és be.
+A 9-es gomb az emelet összes diák Helyétől a belépési ponthoz kiszámít egy útvonalat.
+
+A Q gombbal a 4. szerkesztői mód az útvonal kijelölése. (első alkalommal lehet, hogy háromszor kell kattintani)
+
+
+
+
+
+
+
+
+
+
+
+
+
