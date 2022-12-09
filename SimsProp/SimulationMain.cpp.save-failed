@@ -1454,105 +1454,24 @@ struct Jarokelo{
     vec2 pos;
     vec2 velo;
 
-    float gyorsit = 0.5f;
+    float gyorsit = 5.0f;
 
     int r = rand()%255, g = rand()%255, b = rand()%255;
 
     int csoport = -1;
     string terem = "";
 
-    float mSModif = 0.05f;
     float maxSebesseg = 1.6f;
     float szelesseg = 3.0f;
 
     vector<NapirendiPont> napirend;
     Utvonal utvonal;
 
-    ///bool legyekValahol = false;
-    vector<vec2> holKeneLenni;
-    vec2 holLegyek;
-    float suruseg = 0;
-
-    void szimulacio(float dt, vector<Jarokelo> masok){
-
-        velo=velo*0.96f;
-        //cout<<pow(2.f,suruseg/4.5f)<<" "<<suruseg/3.0f<<endl;
-        float tempMaxSebesseg = maxSebesseg*mSModif/pow(2.f,suruseg/3.0f);
-        float sarokLassitasTavolsag = 100.f;
-        float sarokLassitasRate = 22.f;
-        if (utvonal.utpontok.size()>2){
-            float modif = 1.f-min(min(1.f,max(utvonal.utpontok[1].dist(pos),sarokLassitasRate)/sarokLassitasTavolsag),max(utvonal.utpontok[0].dist(pos),sarokLassitasRate)/sarokLassitasTavolsag);
-            float a = vec2ToDeg(utvonal.utpontok[1]-utvonal.utpontok[0]), b = vec2ToDeg(utvonal.utpontok[2]-utvonal.utpontok[1]);
-            float c = a-b;
-            if (c<0)
-                c+=360;
-            if (c>360)
-                c-=360;
-            float d = 1-cos(c/360.f*M_PI*2.f);
-            float e = 1.f-(d*modif);
-            tempMaxSebesseg*=e;
-        }
-        if (velo.length()>tempMaxSebesseg) {
-            velo.normalize();
-            velo = velo * tempMaxSebesseg;
-        }
-        if (holKeneLenni.size()!=0)
-            pos=holLegyek;
-
-        if (utvonal.utpontok.size()>2){
-            float dis1 = utvonal.utpontok[1].dist(pos), dis2 = utvonal.utpontok[2].dist(pos);
-            //cout<<dis1<<" "<<dis2<<endl;
-            pos+=velo*dt;
-            if (dis1<utvonal.utpontok[1].dist(pos) && dis2>utvonal.utpontok[2].dist(pos)){
-                //cout<<"alma"<<endl;
-                utvonal.utpontok.erase(utvonal.utpontok.begin(),utvonal.utpontok.begin()+1);
-            } else if (((utvonal.utpontok[1]-utvonal.utpontok[0]).normalize() + (utvonal.utpontok[1]-pos).normalize()).length()<sqrt(2.f)){
-                utvonal.utpontok.erase(utvonal.utpontok.begin(),utvonal.utpontok.begin()+1);
-            }
-
-        }else{
-            pos+=velo*dt;
-            if (utvonal.utpontok.size()>1){
-                if (utvonal.utpontok[1].dist(pos)<5.f){
-                    utvonal.utpontok.erase(utvonal.utpontok.begin(),utvonal.utpontok.begin()+1);
-                } else if (((utvonal.utpontok[1]-utvonal.utpontok[0]).normalize() + (utvonal.utpontok[1]-pos).normalize()).length()<sqrt(2.f)){
-                    utvonal.utpontok.erase(utvonal.utpontok.begin(),utvonal.utpontok.begin()+1);
-                }
-            }
-        }
-    }
-
-    void preSzimulacio(float dt, vector<Jarokelo> masok){
+    void szimulacio(float dt){
         dt = dt / 1000.f;
-        if (utvonal.utpontok.size()>1){
-            vec2 irany = (utvonal.utpontok[1] - pos).normalize() + (utvonal.utpontok[1]-utvonal.utpontok[0]).normalize(); irany.normalize();
-            velo += irany * dt * gyorsit;
-        } else if (utvonal.utpontok.size()==1){
-            vec2 irany = (utvonal.utpontok[0] - pos).normalize(); irany.normalize();
-            velo += irany * dt * gyorsit;
-        }
-        holKeneLenni.clear();
-        holLegyek=vec2(0,0);
-        suruseg = 0;
-        vec2 hm = velo;
-        for (int i=0; i<masok.size(); i++){
-            if (masok[i].pos==pos)
-                continue;
-
-            if (masok[i].pos.dist(pos)<30.f){
-                if (((masok[i].pos-pos).normalize()+(hm.normalize())).length()<sqrt(2)){
-                    suruseg+=0.15f;
-                } else {
-                    suruseg+=1.00f;
-                }
-            }
-            if (masok[i].pos.dist(pos) < masok[i].szelesseg+szelesseg){
-                holKeneLenni.push_back(masok[i].pos+(pos-masok[i].pos).normalize()*(masok[i].szelesseg+szelesseg));
-                holLegyek+=holKeneLenni.back();
-            }
-        }
-        holLegyek = holLegyek / holKeneLenni.size();
-
+        velo += (utvonal.utpontok[1] - pos) * dt * gyorsit;
+        velo=velo*0.99f;
+        pos+=velo*dt;
     }
 
 };
@@ -1712,10 +1631,7 @@ struct Emelet{
 
     void szimulacio(float dt){
         for (int i=0; i<jarokelok.size(); i++){
-            jarokelok[i].preSzimulacio(dt,jarokelok);
-        }
-        for (int i=0; i<jarokelok.size(); i++){
-            jarokelok[i].szimulacio(dt,jarokelok);
+            jarokelok[i].szimulacio(dt);
         }
     }
 
@@ -1923,17 +1839,9 @@ struct Emelet{
                 //cout<<"l";
                 Jarokelo jaro;
                 jaro.pos=belepesiPont;
-                jaro.pos.x+=(rand()%2000)/1000.f - 1.f;
-                jaro.pos.y+=(rand()%2000)/1000.f - 1.f;
-                jaro.szelesseg=10.f + (rand()%9)*0.5f;
+                jaro.szelesseg=10.f;
                 jaro.terem=szobak[i].nev;
                 jaro.utvonal.utpontok=navHalo.calcUtVonalB(jaro.pos,szobak[i].diakok[j].szobaPoz,jaro.szelesseg);
-                for (int k=0; k<((int)jaro.utvonal.utpontok.size())-1; k++){
-                    if (jaro.utvonal.utpontok[k]==jaro.utvonal.utpontok[k+1]){
-                        jaro.utvonal.utpontok.erase(jaro.utvonal.utpontok.begin()+k);
-                        k--;
-                    }
-                }
                 cout<<jaro.utvonal.utpontok.size();
                 jaro.csoport=0;
                 jarokelok.push_back(jaro);
@@ -1987,9 +1895,7 @@ struct Emelet{
                 sz.draw(renderer,kamera,jarokelok[i].r,jarokelok[i].g,jarokelok[i].b);
             }
             //cout<<"d"<<endl;
-            filledCircleRGBA(&renderer,kamera.valosLekepezese(jarokelok[i].pos).x,kamera.valosLekepezese(jarokelok[i].pos).y,
-                             jarokelok[i].szelesseg*SZELES/kamera.zoom,
-                             jarokelok[i].r,jarokelok[i].g,jarokelok[i].b,255);
+            filledCircleRGBA(&renderer,kamera.valosLekepezese(jarokelok[i].pos).x,kamera.valosLekepezese(jarokelok[i].pos).y,5,jarokelok[i].r,jarokelok[i].g,jarokelok[i].b,255);
         }
 
         /*
@@ -2025,8 +1931,6 @@ int szerkesztoModCnt = 5;
 bool elsoCsucs = false;
 vec2 elsoCsucsPos;
 
-bool num5 = false;
-
 /// eseméyneket, bemeneteket itt kezelem le
 void EventHandle(SDL_Event ev){
     kamera.handleEvent(ev);
@@ -2047,15 +1951,9 @@ void EventHandle(SDL_Event ev){
             folyamatban=false;
             f1=-1;
         }
-        if (ev.key.keysym.sym == SDLK_5){
-            num5=false;
-        }
     }
     if (ev.type==SDL_KEYDOWN){
 
-        if (ev.key.keysym.sym == SDLK_5){
-            num5=true;
-        }
         if (ev.key.keysym.sym == SDLK_c){ /// elkészíti a NavMesh oldalait
             clock_t t = clock();
             vilag.alaprajzhozTartozoLetrehozasa();
@@ -2307,8 +2205,7 @@ void simulation(SDL_Window &window, SDL_Renderer &renderer){
             SDL_SetRenderDrawColor( &renderer, 255, 255, 255, 255 ); /// tisztító szín
             SDL_RenderClear(&renderer); /// tiszta
             kamera.moveCamera(dt); /// mozgatja a kamerát
-            if (num5)
-                emelet.szimulacio(dt);
+            emelet.szimulacio(dt);
             /*
             if (folyamatban){
                 vilag.agentRadius+=dt/1000.f*f1;
