@@ -625,6 +625,8 @@ struct NavigaciosHalo{
                 }
             }
         }
+
+        cout<<"A1: "<<clock()-t<<endl;
         for (int i=0; i<ajtok.size(); i++){
             for (int j=0; j<ajtok[i].size(); j++){
                 set<Csucs>::iterator it;
@@ -664,7 +666,7 @@ struct NavigaciosHalo{
                 }
             }
         }
-
+        cout<<"B1: "<<clock()-t<<endl;
         emeletCsucsai.resize(emeletaTempCsucsai.size());
         for (int i=0; i<emeletaTempCsucsai.size(); i++){
             vector<Csucs> temp(emeletaTempCsucsai[i].begin(),emeletaTempCsucsai[i].end());
@@ -679,6 +681,7 @@ struct NavigaciosHalo{
                 it->ordNum=j;
             }
         }
+        cout<<"C1: "<<clock()-t<<endl;
         for (int i=0; i<emeletCsucsai.size(); i++){
             for (int j=0; j<emeletCsucsai[i].size(); j++){
                 emeletCsucsai[i][j].szomszedok.resize(emeletCsucsai[i][j].szomszedokPosV.size());
@@ -691,9 +694,10 @@ struct NavigaciosHalo{
                 emeletCsucsai[i][j].szomszedokSet=temp;
             }
         }
-
+        cout<<"D1: "<<clock()-t<<endl;
         //bool navMeshDesign = false;
         navMesh.resize(emeletCsucsai.size());
+        vector<set<Sikidom>> navMeshSet(navMesh.size());
         for (int z=0; z<emeletCsucsai.size(); z++){
             for (int i=0; i<emeletCsucsai[z].size(); i++){
                 for (int j=0; j<emeletCsucsai[z][i].szomszedok.size(); j++){
@@ -709,13 +713,23 @@ struct NavigaciosHalo{
                             Szakasz c(emeletCsucsai[z][emeletCsucsai[z][emeletCsucsai[z][i].szomszedok[j]].szomszedok[k]].pos,emeletCsucsai[z][i].pos);
 
                             bool baj = false;
-                            for (int l=navMesh[z].size()-1; l>=0; l--){ /// FONTOS, ezen fordítva iterálás 355ms -ról 85ms-re csökkentette az algoritmus futását
-                                set<vec2> tempcs;
-                                tempcs.insert(a.p1); tempcs.insert(a.p2); tempcs.insert(b.p2);
-                                if (tempcs.size()!=3){
-                                    baj=true;
-                                    break;
-                                }
+                            set<vec2> tempCsAlap;
+                            tempCsAlap.insert(a.p1); tempCsAlap.insert(a.p2); tempCsAlap.insert(b.p2);
+                            if (tempCsAlap.size()!=3){
+                                baj=true;
+                                //cout<<"BAJ"<<endl;
+                                continue;
+                            }
+                            Sikidom temp;
+                            temp.szakaszok.push_back(a);
+                            temp.szakaszok.push_back(b);
+                            temp.szakaszok.push_back(c);
+                            temp.kozep = (temp.szakaszok[0].p1+temp.szakaszok[0].p2+temp.szakaszok[1].p2)/3;
+                            if (navMeshSet[z].find(temp)!=navMeshSet[z].end())
+                                continue;
+                            /*
+                            for (int l=navMesh[z].size()-1; l>=0 && !baj; l--){ /// FONTOS, ezen fordítva iterálás 355ms -ról 85ms-re csökkentette az algoritmus futását
+                                set<vec2> tempcs = tempCsAlap;
                                 tempcs.insert(navMesh[z][l].szakaszok[0].p1); tempcs.insert(navMesh[z][l].szakaszok[0].p2); tempcs.insert(navMesh[z][l].szakaszok[1].p2);
                                 if (tempcs.size()==3){
                                     set<vec2> tempcs2;
@@ -726,14 +740,13 @@ struct NavigaciosHalo{
                                     }
                                 }
                             }
-                            if (baj)
+                            */
+                            if (baj){
                                 continue;
+                            }
 
                             //cout<<"alma"<<endl;
-                            Sikidom temp;
-                            temp.szakaszok.push_back(a);
-                            temp.szakaszok.push_back(b);
-                            temp.szakaszok.push_back(c);
+
                             if (emeletCsucsai[z][i].szobaId==-1)
                                 cout<<"felesleges"<<endl;
                             temp.szobaId=emeletCsucsai[z][i].szobaId;
@@ -766,14 +779,16 @@ struct NavigaciosHalo{
                             else
                                 it2->addSzomszedokPosOldalfelezo(av,bv,navMesh[z].size());
                             //cout<<"balma"<<endl;
+                            temp.kozep = (temp.szakaszok[0].p1+temp.szakaszok[0].p2+temp.szakaszok[1].p2)/3;
 
                             navMesh[z].push_back(temp);
+                            navMeshSet[z].insert(temp);
                         }
                     }
                 }
             }
         }
-
+        cout<<"E1: "<<clock()-t<<endl;
         for (int i=0; i<emeletaOldalTempfelezoPontjai.size(); i++){
             vector<Csucs> temp(emeletaOldalTempfelezoPontjai[i].begin(),emeletaOldalTempfelezoPontjai[i].end());
             emeletaOldalfelezoPontjai.push_back(temp);
@@ -1713,6 +1728,30 @@ struct Emelet{
             szobakSzomszedjainakAjtoi[szobaToIdx].push_back(ajto2Idx);
             szobak[szobaToIdx].getIntrest(ajto2Idx,szobak[szobaFromIdx],ajto1Idx);
         }
+        cout<<"Fajlbol Emelet: "<<clock()-t<<endl;
+        config();
+        cout<<"EMELET: "<<clock()-t<<endl;
+    }
+
+    Emelet(int teszt){
+        clock_t t=clock();
+        int szCnt = teszt;
+        szobak.resize(szCnt);
+        szobakSzomszedjai.resize(szCnt);
+        szobakSzomszedjainakAjtoi.resize(szCnt);
+        szobak[0].loadSzobaFromFile("GFolyoso");
+        for (int i=1; i<szCnt; i++){
+            szobak[i]=szobak[0];
+        }
+
+        for (int i=1; i<szCnt; i++){
+            szobakSzomszedjai[i-1].push_back(i);
+            szobakSzomszedjainakAjtoi[i-1].push_back(2);
+            szobakSzomszedjai[i].push_back(i-1);
+            szobakSzomszedjainakAjtoi[i].push_back(0);
+            szobak[i].getIntrest(0,szobak[i-1],2);
+        }
+        cout<<"Fajlbol Emelet: "<<clock()-t<<endl;
         config();
         cout<<"EMELET: "<<clock()-t<<endl;
     }
@@ -1740,6 +1779,7 @@ struct Emelet{
             szobak[i].createVilag(agentSizes);
         }
 
+        clock_t t = clock();
         float elsoSzobaMerete = 0;
         for (int i=0; i<szobak[0].navigaciosTerAS[0].navMesh.size();i++){
             Haromszog harom(szobak[0].navigaciosTerAS[0].navMesh[i].szakaszok[0].p1,
@@ -1772,6 +1812,7 @@ struct Emelet{
             egeszVaS[i].alaprajzhozTartozoLetrehozasa();
         }
         getAjtok();
+        cout<<"Emelete alakitas: "<<clock()-t<<endl;
 
         navHalo.szobak=szobak;
         navHalo.agentSizes=agentSizes;
@@ -2093,7 +2134,7 @@ void simulation(SDL_Window &window, SDL_Renderer &renderer){
         cin>>valasz;
         emelet = Emelet(valasz);
     } else {
-        emelet = Emelet(true);
+        emelet = Emelet(100);
     }
 
     /// megjelenítési és eseménykezelő ciklus

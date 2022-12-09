@@ -296,6 +296,8 @@ struct Sikidom{
     bool belso = true; /// ezen belül vagy kívül lehet mozogni
     int szobaId = -1;
 
+    vec2 kozep;
+
     /// megjelenítés
     void draw(SDL_Renderer &renderer, Kamera kamera, bool navMesh=false){
         int r = 255, g=0, b=0;
@@ -611,7 +613,15 @@ struct Sikidom{
         }
         return atlok;
     }
+
+
 };
+
+/// ezek rendezéséhez szükség van erre
+bool operator< (const Sikidom& lhs,const Sikidom& rhs) {
+    return lhs.kozep<rhs.kozep;
+}
+
 
 
 struct Palya{
