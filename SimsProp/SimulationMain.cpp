@@ -1475,6 +1475,32 @@ struct Jarokelo{
 
     void szimulacio(float dt, vector<Jarokelo> masok){
 
+        vector<Sikidom> navHaloSzelessegemre;
+        for (int i=0; i<navHalo.agentSizes.size();i++){
+            if (navHalo.agentSizes[i]==szelesseg){
+                navHaloSzelessegemre=navHalo.navMesh[i];
+            }
+        }
+
+        vec2 PosSave = pos;
+        Haromszog jelenlegiHaromszogem;
+
+        for (int i=0; i<navHaloSzelessegemre.size(); i++){
+            if (navHaloSzelessegemre[i].szakaszok.size()<3)
+                continue;
+            vec2 A = navHaloSzelessegemre[i].szakaszok[0].p1;
+            vec2 B = navHaloSzelessegemre[i].szakaszok[0].p2;
+            vec2 C = navHaloSzelessegemre[i].szakaszok[1].p2;
+            Haromszog temp(A,B,C);
+            if (temp.benneVanAPont(PosSave)){
+                jelenlegiHaromszogem = temp;
+                break;
+            }
+        }
+
+        if (jelenlegiHaromszogem.A.x==-123)
+            return;
+
         velo=velo*0.96f;
         //cout<<pow(2.f,suruseg/4.5f)<<" "<<suruseg/3.0f<<endl;
         float tempMaxSebesseg = maxSebesseg*mSModif/pow(2.f,suruseg/3.0f);
@@ -1499,6 +1525,36 @@ struct Jarokelo{
         if (holKeneLenni.size()!=0)
             pos=holLegyek;
 
+        if (!jelenlegiHaromszogem.benneVanAPont(pos)){
+
+            bool okS = false;
+            for (int i=0; i<navHaloSzelessegemre.size(); i++){
+                if (navHaloSzelessegemre[i].szakaszok.size()<3)
+                    continue;
+                vec2 A = navHaloSzelessegemre[i].szakaszok[0].p1;
+                vec2 B = navHaloSzelessegemre[i].szakaszok[0].p2;
+                vec2 C = navHaloSzelessegemre[i].szakaszok[1].p2;
+                Haromszog temp(A,B,C);
+                if (temp.benneVanAPont(pos)){
+                    okS = true;
+                    jelenlegiHaromszogem=temp;
+                    break;
+                }
+            }
+
+            if (!okS){
+                //if ((jelenlegiHaromszogem.legkozelebbiPont(pos).dist(pos))<0.2f)
+                    pos = jelenlegiHaromszogem.legkozelebbiPontSzakaszhoz(pos);
+                if (!jelenlegiHaromszogem.benneVanAPont(pos))
+                    cout<<"Ez a baj!"<<endl;
+                //else {
+                  //  pos = PosSave;
+                    //return;
+                //}
+            }
+        }
+
+
         if (utvonal.utpontok.size()>2){
             float dis1 = utvonal.utpontok[1].dist(pos), dis2 = utvonal.utpontok[2].dist(pos);
             //cout<<dis1<<" "<<dis2<<endl;
@@ -1518,6 +1574,35 @@ struct Jarokelo{
                 } else if (((utvonal.utpontok[1]-utvonal.utpontok[0]).normalize() + (utvonal.utpontok[1]-pos).normalize()).length()<sqrt(2.f)){
                     utvonal.utpontok.erase(utvonal.utpontok.begin(),utvonal.utpontok.begin()+1);
                 }
+            }
+        }
+
+        if (!jelenlegiHaromszogem.benneVanAPont(pos)){
+
+            bool okS = false;
+            for (int i=0; i<navHaloSzelessegemre.size(); i++){
+                if (navHaloSzelessegemre[i].szakaszok.size()<3)
+                    continue;
+                vec2 A = navHaloSzelessegemre[i].szakaszok[0].p1;
+                vec2 B = navHaloSzelessegemre[i].szakaszok[0].p2;
+                vec2 C = navHaloSzelessegemre[i].szakaszok[1].p2;
+                Haromszog temp(A,B,C);
+                if (temp.benneVanAPont(pos)){
+                    okS = true;
+                    jelenlegiHaromszogem=temp;
+                    break;
+                }
+            }
+
+            if (!okS){
+                //if ((jelenlegiHaromszogem.legkozelebbiPont(pos).dist(pos))<0.2f)
+                    pos = jelenlegiHaromszogem.legkozelebbiPontSzakaszhoz(pos);
+
+                if (!jelenlegiHaromszogem.benneVanAPont(pos))
+                    cout<<"Ez a baj!"<<endl;//else {
+                  //  pos = PosSave;
+                    //return;
+                //}
             }
         }
     }
@@ -1711,6 +1796,18 @@ struct Emelet{
     }
 
     void szimulacio(float dt){
+        cout<<"alma"<<endl;
+        for (int i=0; i<jarokelok.size(); i++){
+            if (rand()%20 != 0)
+                continue;
+            jarokelok[i].utvonal.utpontok=navHalo.calcUtVonalB(jarokelok[i].pos,jarokelok[i].utvonal.utpontok.back(),jarokelok[i].szelesseg);
+            for (int k=0; k<((int)jarokelok[i].utvonal.utpontok.size())-1; k++){
+                if (jarokelok[i].utvonal.utpontok[k]==jarokelok[i].utvonal.utpontok[k+1]){
+                    jarokelok[i].utvonal.utpontok.erase(jarokelok[i].utvonal.utpontok.begin()+k);
+                    k--;
+                }
+            }
+        }
         for (int i=0; i<jarokelok.size(); i++){
             jarokelok[i].preSzimulacio(dt,jarokelok);
         }
@@ -2053,7 +2150,7 @@ void EventHandle(SDL_Event ev){
     }
     if (ev.type==SDL_KEYDOWN){
 
-        if (ev.key.keysym.sym == SDLK_5){
+        if (ev.key.keysym.sym == SDLK_5){ /// szímiláció futttása, emberek mozgatása
             num5=true;
         }
         if (ev.key.keysym.sym == SDLK_c){ /// elkészíti a NavMesh oldalait
@@ -2197,6 +2294,9 @@ void EventHandle(SDL_Event ev){
 
     if (ev.type==SDL_MOUSEWHEEL){
         //cout<<ev.wheel.y<<endl;
+        Haromszog temp(vec2(2,3),vec2(5,7),vec2(-1,10));
+        cout<<temp.legkozelebbiPont(vec2(4,4)).x<<endl;
+        cout<<temp.legkozelebbiPont(vec2(4,4)).y<<endl;
     }
 
     if (ev.type==SDL_MOUSEBUTTONDOWN){
@@ -2255,7 +2355,7 @@ void EventHandle(SDL_Event ev){
         exit(3);
 }
 
-
+#define IMG_PATH "BME_I-épület_4-emelet.jpg"
 
 /// MAIN
 void simulation(SDL_Window &window, SDL_Renderer &renderer){
@@ -2279,6 +2379,12 @@ void simulation(SDL_Window &window, SDL_Renderer &renderer){
     } else {
         emelet = Emelet(false);
     }
+
+    SDL_Texture *img = NULL;
+    img = IMG_LoadTexture(&renderer, IMG_PATH);
+    int w, h;
+    SDL_QueryTexture(img, NULL, NULL, &w, &h);
+    SDL_Rect texr; texr.x = SZELES/2; texr.y = MAGAS/2; texr.w = w*2; texr.h = h*2;
 
     /// megjelenítési és eseménykezelő ciklus
     while(!stop){
@@ -2328,3 +2434,5 @@ void simulation(SDL_Window &window, SDL_Renderer &renderer){
         }
     }
 }
+
+// VÉGE

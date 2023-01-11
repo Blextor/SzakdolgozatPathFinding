@@ -17,6 +17,8 @@ int main( int argc, char * argv[] )
     SDL_RenderClear( renderer );
     SDL_RenderPresent( renderer );
 
+
+
     /*
     cout<<cos(0)<<" "<<cos(90)<<" "<<cos(M_PI)<<endl;
 

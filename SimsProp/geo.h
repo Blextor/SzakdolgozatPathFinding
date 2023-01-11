@@ -85,6 +85,14 @@ struct Szakasz{
         return sqrt(x); /// a pont távolsága
     }
 
+    float vec2Tav2(vec2 p){
+
+        float d = fabs((p1.x - p2.x) * (p.y - p2.y) - (p.x - p2.x) * (p1.y - p2.y))
+        /
+        sqrt(pow(p1.x - p2.x, 2) + pow(p1.y - p2.y, 2));
+        return d;
+    }
+
     /// meg lehet jeleníteni
     void draw(SDL_Renderer &renderer, Kamera kamera, int r = 255, int g = 255, int b = 23){
             lineRGBA(&renderer,
@@ -250,6 +258,43 @@ bool metszikVagyAtlapolodnak(Szakasz sz1, Szakasz sz2){
 
 
 
+vec2 mirror(vec2 p, Szakasz sz)
+{
+
+   float dx,dy,a,b;
+   float x2,y2;
+   vec2 p1; //reflected point to be returned
+
+   dx  = (sz.p2.x - sz.p1.x);
+   dy  = (sz.p2.y - sz.p1.y);
+
+   a   = (dx * dx - dy * dy) / (dx * dx + dy*dy);
+   b   = 2 * dx * dy / (dx*dx + dy*dy);
+
+   x2  = (a * (p.x - sz.p1.x) + b*(p.y - sz.p1.y) +sz.p1.x);
+   y2  = (b * (p.x - sz.p1.x) - a*(p.y - sz.p1.y) + sz.p1.y);
+
+   p1 = vec2(x2,y2);
+
+   return p1;
+
+}
+
+
+float pontSzakaszTav(vec2 p1, Szakasz sz){
+    //vec2 p2 = sz.p1-p1 + sz.p2-p1 + p1
+    vec2 p2 = mirror(p1,sz);
+    Szakasz m(p1,p2);
+    if (metszikVagyAtlapolodnak(m,sz)){
+        return sz.vec2Tav2(p1);
+    }
+    vec2 a = p1-sz.p1, b = p1-sz.p2;
+    if (a.length()>b.length()){
+        return b.length();
+    }
+    return a.length();
+}
+
 
 
 /// nem egy síkidom, külön Önlabon megvalósított osztály
@@ -274,10 +319,75 @@ struct Haromszog{
     }
 
     Haromszog(){
+        A = vec2(-123,0);
         //A=nullptr; B=nullptr; C=nullptr;
     }
     Haromszog(vec2 a, vec2 b, vec2 c){
         A=a; B=b; C=c;
+    }
+
+
+    vec2 legkozelebbiPontSzakaszhoz(vec2 p){
+        if (benneVanAPont(p))
+            return p;
+        float a = pontSzakaszTav(p,Szakasz(A,B));
+        float b = pontSzakaszTav(p,Szakasz(B,C));
+        float c = pontSzakaszTav(p,Szakasz(C,A));
+
+        Szakasz DE;
+        float minAbc = min(a,min(b,c));
+        if (minAbc==a) DE = Szakasz(A,B);
+        if (minAbc==b) DE = Szakasz(B,C);
+        if (minAbc==c) DE = Szakasz(C,A);
+
+
+        vec2 p2 = mirror(p,DE);
+        Szakasz m(p,p2);
+
+        if (metszikVagyAtlapolodnak(m,DE)){
+            return metszikEgymastHol(m,DE);
+        }
+
+        vec2 ap = p-DE.p1, bp = p-DE.p2;
+        if (ap.length()>bp.length()){
+            return DE.p2;
+        }
+        return DE.p1;
+    }
+
+    vec2 legkozelebbiPont(vec2 p){
+        if (benneVanAPont(p))
+            return p;
+        float a = pontSzakaszTav(p,Szakasz(A,B));
+        float b = pontSzakaszTav(p,Szakasz(B,C));
+        float c = pontSzakaszTav(p,Szakasz(C,A));
+        //if (a==b) return B;
+        //if (b==c) return C;
+        //if (c==a) return A;
+
+        Szakasz DE;
+        float minAbc = min(a,min(b,c));
+        if (minAbc==a) DE = Szakasz(A,B);
+        if (minAbc==b) DE = Szakasz(B,C);
+        if (minAbc==c) DE = Szakasz(C,A);
+        vec2 F = DE.p2-DE.p1;
+        vec2 H = p - DE.p1;
+
+
+        vec2 legkozelebbiPontVec2 = DE.p1 + F * (F.dot(H,F)/F.dot(F,F));
+
+        if (!benneVanAPont(legkozelebbiPontVec2)){
+        if (a==b) return B;
+        if (b==c) return C;
+        if (c==a) return A;
+        cout<<"BAJ! "<<A.x<<" "<<A.y<<", "<<B.x<<" "<<B.y<<", "<<C.x<<" "<<C.y<<endl;
+        cout<<p.x<<" "<<p.y<<", "<<legkozelebbiPontVec2.x<<" "<<legkozelebbiPontVec2.y<<endl;
+        cout<<DE.p1.x<<" "<<DE.p1.y<<", "<<DE.p2.x<<" "<<DE.p2.y<<endl;
+        cout<<F.x<<" "<<F.y<<", "<<H.x<<" "<<H.y<<endl;
+        cout<<a<<" "<<b<<" "<<c<<" "<<minAbc<<endl;
+        }
+
+        return legkozelebbiPontVec2;
     }
 };
 
