@@ -2079,9 +2079,9 @@ struct Emelet{
             //cout<<"a"<<endl;
             for (int j=1; j<jarokelok[i].utvonal.utpontok.size(); j++){
             //cout<<"b "<<jarokelok[i].utvonal.utpontok.size()<<" "<<j<<endl;
-                Szakasz sz(jarokelok[i].utvonal.utpontok[j-1],jarokelok[i].utvonal.utpontok[j]);
+                //Szakasz sz(jarokelok[i].utvonal.utpontok[j-1],jarokelok[i].utvonal.utpontok[j]);
             //cout<<"c"<<endl;
-                sz.draw(renderer,kamera,jarokelok[i].r,jarokelok[i].g,jarokelok[i].b);
+                //sz.draw(renderer,kamera,jarokelok[i].r,jarokelok[i].g,jarokelok[i].b);
             }
             //cout<<"d"<<endl;
             filledCircleRGBA(&renderer,kamera.valosLekepezese(jarokelok[i].pos).x,kamera.valosLekepezese(jarokelok[i].pos).y,
@@ -2380,11 +2380,11 @@ void simulation(SDL_Window &window, SDL_Renderer &renderer){
         emelet = Emelet(false);
     }
 
-    SDL_Texture *img = NULL;
-    img = IMG_LoadTexture(&renderer, IMG_PATH);
+    //SDL_Texture *img = NULL;
+    //img = IMG_LoadTexture(&renderer, IMG_PATH);
     int w, h;
-    SDL_QueryTexture(img, NULL, NULL, &w, &h);
-    SDL_Rect texr; texr.x = SZELES/2; texr.y = MAGAS/2; texr.w = w*2; texr.h = h*2;
+    //SDL_QueryTexture(img, NULL, NULL, &w, &h);
+    //SDL_Rect texr; texr.x = SZELES/2; texr.y = MAGAS/2; texr.w = w*2; texr.h = h*2;
 
     /// megjelenítési és eseménykezelő ciklus
     while(!stop){
